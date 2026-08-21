@@ -1,0 +1,13 @@
+{
+  "run_id": "2026-08-21T20:00:00+02:00",
+  "fetched_at": "2026-08-21T20:13:16+02:00",
+  "last_update_at": "2026-08-21T20:13:16+02:00",
+  "last_update_label": "21/08/2026 20:13",
+  "timezone": "Europe/Paris",
+  "n_forecast_rows": 402,
+  "n_ok": 3,
+  "n_partial": 0,
+  "n_failed": 0,
+  "nulls_replaced_by_zero": 0,
+  "failed": []
+}
