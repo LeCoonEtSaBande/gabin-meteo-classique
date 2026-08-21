@@ -15,7 +15,7 @@ const CHARTS = [
     kind: "cloud",
     title: "Nébulosité",
     palette: "cloud",
-    note: `<span class="chart-key"><i class="wx-sun"></i>soleil</span><span class="chart-key"><i class="wx-cloud"></i>nuages</span>`,
+    note: `<span class="chart-key"><i class="wx-sun"></i>soleil</span>`,
   },
   {
     kind: "precip",
@@ -68,16 +68,19 @@ function spotChartsHtml(spot, startDay) {
 function spotMetaHtml(spot) {
   const req = (spot.display_wind_requirements || "").trim();
   const info = (spot.display_spot_infos || "").trim();
-  const lat = (spot.Latitude_spot || "").trim();
-  const lon = (spot.Longitude_spot || "").trim();
-  const coords =
-    lat && lon
-      ? `<p class="spot-coords">Latitude ${escapeHtml(lat)} · Longitude ${escapeHtml(lon)}</p>`
-      : "";
   return `<section class="spot-meta">
     ${info ? `<p class="spot-line spot-infos">${escapeHtml(info)}</p>` : ""}
-    ${coords}
     ${req ? `<p class="spot-line spot-reqs">${escapeHtml(req)}</p>` : ""}
+  </section>`;
+}
+
+function spotCoordsHtml(spot) {
+  const lat = (spot.Latitude_spot || "").trim();
+  const lon = (spot.Longitude_spot || "").trim();
+  if (!lat && !lon) return "";
+  return `<section class="spot-coords">
+    ${lat ? `<p>Latitude ${escapeHtml(lat)}</p>` : ""}
+    ${lon ? `<p>Longitude ${escapeHtml(lon)}</p>` : ""}
   </section>`;
 }
 
@@ -292,7 +295,8 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode }) {
   body.innerHTML = `
     ${spots.map((spot) => spotMetaHtml(spot)).join("")}
     <div class="horizon-bar" role="tablist" aria-label="Horizon de prévision">${horizon}</div>
-    <div class="charts">${spots.map((spot) => spotChartsHtml(spot, dayKey)).join("")}</div>`;
+    <div class="charts">${spots.map((spot) => spotChartsHtml(spot, dayKey)).join("")}</div>
+    ${spots.map((spot) => spotCoordsHtml(spot)).join("")}`;
 
   body.querySelectorAll("[data-horizon]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -326,6 +330,7 @@ if (typeof module !== "undefined" && module.exports) {
     HORIZONS,
     CHARTS,
     spotMetaHtml,
+    spotCoordsHtml,
     specsForZone,
     zoneSpecName,
   };

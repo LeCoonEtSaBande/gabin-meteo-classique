@@ -222,10 +222,16 @@ html, body {
 }
 
 .spot-coords {
-  margin: 0 0 8px;
+  margin: 16px 0 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 11px;
-  line-height: 1.4;
+  line-height: 1.45;
+}
+
+.spot-coords p {
+  margin: 0 0 4px;
 }
 
 .daybar {

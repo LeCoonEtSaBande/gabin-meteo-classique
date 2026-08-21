@@ -146,7 +146,7 @@ test("pluie en mm, température, rosée, pression et vent", () => {
   assert.match(buildChartSvg("dew", SAMPLE, "2026-08-20", 1, 400), /°C/);
   assert.match(buildChartSvg("pressure", SAMPLE, "2026-08-20", 1, 400), /hPa/);
   const wind = buildChartSvg("wind", SAMPLE, "2026-08-20", 1, 400);
-  assert.match(wind, /AROMEIFS/);
+  assert.doesNotMatch(wind, /AROMEIFS/);
   assert.match(wind, /class="kt-8"/);
   assert.match(wind, new RegExp(`stroke-width="${MEAN_STROKE}"`));
   assert.match(wind, /rotate\(220\)/);
@@ -170,13 +170,14 @@ test("le survol choisit le créneau le plus proche", () => {
   assert.equal(arrowRotation(hit.dir), 220);
 });
 
-test("légende des modèles suit la palette du graphique", () => {
-  const legend = legendHtml(SAMPLE, `<span class="chart-key-note">plein = vent moyen</span>`, "wind");
-  assert.match(legend, /AROMEHD/);
-  assert.match(legend, /IFS/);
-  assert.match(legend, /vent moyen/);
-  assert.match(legend, new RegExp(PALETTES.wind.AROMEHD));
-  assert.match(legend, new RegExp(PALETTES.wind.IFS));
+test("légende nébulosité : Nuages + modèle, pas de pastille générique", () => {
+  const legend = legendHtml(SAMPLE, `<span class="chart-key"><i class="wx-sun"></i>soleil</span>`, "cloud");
+  assert.match(legend, /Nuages AROMEHD/);
+  assert.match(legend, /Nuages IFS/);
+  assert.match(legend, new RegExp(PALETTES.cloud.AROMEHD));
+  assert.match(legend, new RegExp(PALETTES.cloud.IFS));
+  assert.match(legend, /soleil/);
+  assert.doesNotMatch(legend, /wx-cloud/);
 });
 
 test("température, rosée et pression ont des palettes distinctes", () => {

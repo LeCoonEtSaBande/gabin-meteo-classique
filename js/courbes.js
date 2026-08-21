@@ -575,7 +575,6 @@ function buildWindChart(points, startDay, nDays, width = 400) {
   };
   return `<svg class="spot-svg" viewBox="0 0 ${width} ${L.height}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Vent et rafales" data-geom="${escapeHtml(JSON.stringify(geom))}">
     <rect x="0" y="0" width="${width}" height="${L.height}" fill="transparent"></rect>
-    <text class="set-label" x="4" y="${L.dirY0 + 15}" text-anchor="start" fill="#b29f84" font-size="8px">AROMEIFS</text>
     ${arrows}
     ${grid}
     ${kt8Line}
@@ -621,10 +620,11 @@ function pickNearestPoint(points, startDay, nDays, geom, svgX) {
 
 function legendHtml(points, note, palette = "temp") {
   const usedModels = [...new Set((points || []).map((p) => p.source_model))];
+  const prefix = palette === "cloud" ? "Nuages " : "";
   const keys = usedModels
     .map((model) => {
       const col = modelColor(model, palette);
-      return `<span class="chart-key"><i style="background:${col}"></i>${escapeHtml(model)}</span>`;
+      return `<span class="chart-key"><i style="background:${col}"></i>${escapeHtml(prefix + model)}</span>`;
     })
     .join("");
   return `<div class="chart-legend">

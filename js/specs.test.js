@@ -17,7 +17,7 @@ test("spots_specifications ne contient que Ferme de Sauze", () => {
   assert.equal(rows[0].display_spot_infos, "Bonne journée Papou");
   assert.equal(
     rows[0].display_wind_requirements,
-    "AROMEHD = Court terme très fiable.\nARPEGE = Moyen terme/fiable.\nIFS = Long terme peu fiable."
+    "AROMEHD = Court terme très fiable\nARPEGE = Moyen terme/fiable\nIFS = Long terme peu fiable\n\nMise à jour quotidienne a 6h30 et 19h30"
   );
   assert.equal(rows[0].Latitude_spot, "45.09604610002097");
   assert.equal(rows[0].Longitude_spot, "4.714684175474471");

@@ -5,7 +5,7 @@ const path = require("node:path");
 const { parseCsv } = require("./csv.js");
 
 Object.assign(global, require("./courbes.js"));
-const { CHARTS, spotMetaHtml } = require("./detail.js");
+const { CHARTS, spotMetaHtml, spotCoordsHtml } = require("./detail.js");
 
 test("titres température et rosée sans « 2 m »", () => {
   assert.equal(
@@ -22,7 +22,7 @@ test("titres température et rosée sans « 2 m »", () => {
   }
 });
 
-test("métadonnées du spot en tête de panneau, sans boutons", () => {
+test("métadonnées du spot en tête, coordonnées en bas", () => {
   const csv = fs.readFileSync(
     path.join(__dirname, "..", "assets", "spots_specs", "spots_specifications.csv"),
     "utf8"
@@ -31,7 +31,11 @@ test("métadonnées du spot en tête de panneau, sans boutons", () => {
   const html = spotMetaHtml(spot);
   assert.match(html, /Bonne journée Papou/);
   assert.match(html, /Court terme très fiable/);
-  assert.match(html, /Latitude 45\.09604610002097/);
-  assert.match(html, /Longitude 4\.714684175474471/);
-  assert.doesNotMatch(html, /Windguru|Webcam|Anémo|link-btn|Ferme de Sauze/);
+  assert.match(html, /Mise à jour quotidienne a 6h30 et 19h30/);
+  assert.doesNotMatch(html, /Latitude|Longitude|Windguru|Webcam|Anémo|link-btn|Ferme de Sauze/);
+  const coords = spotCoordsHtml(spot);
+  assert.match(coords, /Latitude 45\.09604610002097/);
+  assert.match(coords, /Longitude 4\.714684175474471/);
+  assert.ok(coords.indexOf("Latitude") < coords.indexOf("Longitude"));
+  assert.match(coords, /<\/p>\s*<p>/);
 });
