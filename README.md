@@ -1,6 +1,6 @@
 # Gabin-meteo classique
 
-Prévisions météo d’un spot unique (Portes-lès-Valence) : collecte Open-Meteo, courbes AROMEIFS, panneau web.
+Prévisions météo d’un spot unique (Ferme de Sauze) : collecte Open-Meteo, courbes AROMEIFS, panneau web.
 
 Site public : [lecoonetsabande.github.io/gabin-meteo-classique](https://lecoonetsabande.github.io/gabin-meteo-classique/)
 
@@ -52,7 +52,7 @@ Déclenchement manuel : Actions → *Collecte Open-Meteo* (`force` ignore le fil
 
 ## Données
 
-- **1 spot** : Portes-lès-Valence (Parking des Surfeurs).
+- **1 spot** : Ferme de Sauze.
 - **3 modèles** Open-Meteo : AROMEHD, ARPEGE, IFS.
 - **Une seule courbe** `AROMEIFS` : AROMEHD → ARPEGE → IFS (chaque modèle jusqu’à son horizon).
 - Variables : nébulosité, précipitation, température 2 m, vent / rafales / direction (nœuds), point de rosée 2 m, pression de surface.
