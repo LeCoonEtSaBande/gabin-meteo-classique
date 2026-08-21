@@ -10,31 +10,28 @@ const HORIZONS = [
   { days: 5, label: "5 jours" },
 ];
 
-const LINK_DEFS = [
-  { key: "link_windguru", label: "Windguru" },
-  { key: "link_webcam", label: "Webcam" },
-  { key: "link_anemometer", label: "Anémo" },
-];
-
 const CHARTS = [
   {
     kind: "cloud",
     title: "Nébulosité",
-    note: `<span class="chart-key"><i class="wx-sun"></i>soleil</span><span class="chart-key"><i class="wx-cloud"></i>nuages</span><span class="chart-key-note">échelle droite = soleil, inverse des nuages</span>`,
+    palette: "cloud",
+    note: `<span class="chart-key"><i class="wx-sun"></i>soleil</span><span class="chart-key"><i class="wx-cloud"></i>nuages</span>`,
   },
   {
     kind: "precip",
     title: "Précipitations",
+    palette: "precip",
     note: `<span class="chart-key"><i class="wx-precip"></i>pluie (mm)</span>`,
   },
-  { kind: "temp", title: "Température 2 m" },
+  { kind: "temp", title: "Température", palette: "temp" },
   {
     kind: "wind",
     title: "Vent et rafales",
+    palette: "wind",
     note: `<span class="chart-key-note">plein = vent moyen · pointillé = rafales</span>`,
   },
-  { kind: "dew", title: "Point de rosée 2 m" },
-  { kind: "pressure", title: "Pression de surface" },
+  { kind: "dew", title: "Point de rosée", palette: "dew" },
+  { kind: "pressure", title: "Pression de surface", palette: "pressure" },
 ];
 
 let horizonDays = 1;
@@ -53,22 +50,6 @@ function specsForZone(zoneKey) {
   return spotSpecs.filter((spot) => spot.zone_key === zoneKey);
 }
 
-function linkButton(href, label) {
-  const url = (href || "").trim();
-  if (!url) {
-    return `<span class="link-btn is-disabled" aria-disabled="true">${escapeHtml(label)}</span>`;
-  }
-  return `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
-}
-
-function mapsButton(spot) {
-  const url = mapsUrl(spot.Latitude_mise_a_leau, spot.Longitude_mise_a_leau);
-  if (!url) {
-    return `<span class="link-btn is-disabled" aria-disabled="true">Carte</span>`;
-  }
-  return `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Carte</a>`;
-}
-
 function seriesForSpot(spotKey, startDay) {
   return sliceHorizon(curveIndex.AROMEIFS[spotKey] || [], startDay, horizonDays);
 }
@@ -79,20 +60,24 @@ function spotChartsHtml(spot, startDay) {
     (chart) => `<section class="spot-block" data-spot="${escapeHtml(spot.spot_key)}" data-kind="${chart.kind}">
       <h3 class="spot-chart-title">${escapeHtml(chart.title)}</h3>
       <div class="spot-chart" data-spot="${escapeHtml(spot.spot_key)}" data-kind="${chart.kind}">${buildChartSvg(chart.kind, points, startDay, horizonDays, 400)}</div>
-      ${legendHtml(points, chart.note || "")}
+      ${legendHtml(points, chart.note || "", chart.palette || "temp")}
     </section>`
   ).join("");
 }
 
-function spotInfoHtml(spot) {
-  const req = spot.display_wind_requirements || "";
-  const info = spot.display_spot_infos || "";
-  const links = LINK_DEFS.map((def) => linkButton(spot[def.key], def.label)).join("");
-  return `<section class="spot-info">
-    <h3>${escapeHtml(spot.display_name)}</h3>
-    <p class="spot-line">${escapeHtml(req) || "—"}</p>
-    <p class="spot-line">${escapeHtml(info) || "—"}</p>
-    <div class="spot-links">${links}${mapsButton(spot)}</div>
+function spotMetaHtml(spot) {
+  const req = (spot.display_wind_requirements || "").trim();
+  const info = (spot.display_spot_infos || "").trim();
+  const lat = (spot.Latitude_spot || "").trim();
+  const lon = (spot.Longitude_spot || "").trim();
+  const coords =
+    lat && lon
+      ? `<p class="spot-coords">Latitude ${escapeHtml(lat)} · Longitude ${escapeHtml(lon)}</p>`
+      : "";
+  return `<section class="spot-meta">
+    ${info ? `<p class="spot-line spot-infos">${escapeHtml(info)}</p>` : ""}
+    ${coords}
+    ${req ? `<p class="spot-line spot-reqs">${escapeHtml(req)}</p>` : ""}
   </section>`;
 }
 
@@ -305,9 +290,9 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode }) {
   ).join("");
 
   body.innerHTML = `
+    ${spots.map((spot) => spotMetaHtml(spot)).join("")}
     <div class="horizon-bar" role="tablist" aria-label="Horizon de prévision">${horizon}</div>
-    <div class="charts">${spots.map((spot) => spotChartsHtml(spot, dayKey)).join("")}</div>
-    <div class="spot-infos">${spots.map((spot) => spotInfoHtml(spot)).join("")}</div>`;
+    <div class="charts">${spots.map((spot) => spotChartsHtml(spot, dayKey)).join("")}</div>`;
 
   body.querySelectorAll("[data-horizon]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -339,10 +324,8 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode }) {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     HORIZONS,
-    LINK_DEFS,
     CHARTS,
-    linkButton,
-    mapsButton,
+    spotMetaHtml,
     specsForZone,
     zoneSpecName,
   };

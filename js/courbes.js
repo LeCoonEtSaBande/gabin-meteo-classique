@@ -2,15 +2,44 @@
 
 const CURVE_SETS = ["AROMEIFS"];
 
-const MODEL_COLORS = {
-  AROMEHD: "#b29f84",
-  ARPEGE: "#d7c4a4",
-  IFS: "#9aaa78",
+const PALETTES = {
+  temp: {
+    AROMEHD: "#e6b422",
+    ARPEGE: "#c45c26",
+    IFS: "#5f8a2a",
+  },
+  wind: {
+    AROMEHD: "#e6b422",
+    ARPEGE: "#c45c26",
+    IFS: "#5f8a2a",
+  },
+  dew: {
+    AROMEHD: "#8fd4f0",
+    ARPEGE: "#3a8fd0",
+    IFS: "#1a4a8c",
+  },
+  precip: {
+    AROMEHD: "#8fd4f0",
+    ARPEGE: "#3a8fd0",
+    IFS: "#1a4a8c",
+  },
+  pressure: {
+    AROMEHD: "#ffc1c1",
+    ARPEGE: "#f07070",
+    IFS: "#d44545",
+  },
+  cloud: {
+    AROMEHD: "#cfcfcf",
+    ARPEGE: "#6e6e6e",
+    IFS: "#3a3a3a",
+  },
 };
 
-const WX_CLOUD = "#8a8a8a";
-const WX_PRECIP = "#5a8aa3";
-const SUN_FILL = "#c9b06a";
+const MODEL_COLORS = PALETTES.temp;
+
+const WX_CLOUD = "#6e6e6e";
+const WX_PRECIP = "#3a8fd0";
+const SUN_FILL = "#ffcc33";
 const KT8 = 8;
 const KT25 = 25;
 const MEAN_STROKE = 1.94;
@@ -24,8 +53,9 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;");
 }
 
-function modelColor(model) {
-  return MODEL_COLORS[model] || "#7a7a7a";
+function modelColor(model, palette = "temp") {
+  const colors = PALETTES[palette] || PALETTES.temp;
+  return colors[model] || "#7a7a7a";
 }
 
 function mapsUrl(lat, lon) {
@@ -316,7 +346,7 @@ function layout(width, plotH, options = {}) {
   return { padL, padR, plotH, dirH, plotTop, plotBottom, axisY, height, innerW, x0, x1, dirY0 };
 }
 
-function paintModelLine(points, startDay, nDays, x0, innerW, yOf, dashed) {
+function paintModelLine(points, startDay, nDays, x0, innerW, yOf, dashed, palette = "temp") {
   const segs = lineSegments(points, startDay, nDays, x0, innerW, yOf);
   const attrs = dashed
     ? ` stroke-dasharray="3 3" stroke-width="${GUST_STROKE}" opacity="0.92"`
@@ -324,7 +354,7 @@ function paintModelLine(points, startDay, nDays, x0, innerW, yOf, dashed) {
   return segs
     .map(
       (seg) =>
-        `<path d="${seg.d}" fill="none" stroke="${modelColor(seg.model)}"${attrs} stroke-linejoin="round" stroke-linecap="round"></path>`
+        `<path d="${seg.d}" fill="none" stroke="${modelColor(seg.model, palette)}"${attrs} stroke-linejoin="round" stroke-linecap="round"></path>`
     )
     .join("");
 }
@@ -339,10 +369,11 @@ function buildCloudChart(points, startDay, nDays, width = 400) {
     { sun: 0, cloud: 100 },
     { sun: 25, cloud: 75 },
     { sun: 50, cloud: 50 },
+    { sun: 75, cloud: 25 },
     { sun: 100, cloud: 0 },
   ];
   const cloudTicks = [0, 25, 50, 75, 100];
-  let bars = `<rect class="sun-bg" x="${L.x0}" y="${L.plotTop}" width="${L.innerW}" height="${L.plotH}" fill="${SUN_FILL}" opacity="0.38"></rect>`;
+  let bars = `<rect class="sun-bg" x="${L.x0}" y="${L.plotTop}" width="${L.innerW}" height="${L.plotH}" fill="${SUN_FILL}" opacity="0.55"></rect>`;
   for (let i = 0; i < points.length; i += 1) {
     const point = points[i];
     const x = xOf(point, startDay, nDays, L.x0, L.innerW);
@@ -350,7 +381,7 @@ function buildCloudChart(points, startDay, nDays, width = 400) {
     const w = next ? Math.max(1, xOf(next, startDay, nDays, L.x0, L.innerW) - x) : hourW;
     const yTop = yCloud(point.cloud);
     const ch = L.plotBottom - yTop;
-    bars += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(0, ch).toFixed(1)}" fill="${WX_CLOUD}" opacity="0.78">
+    bars += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(0, ch).toFixed(1)}" fill="${modelColor(point.source_model, "cloud")}" opacity="0.92">
       <title>Nuages ${Math.round(point.cloud)} %</title>
     </rect>`;
   }
@@ -406,7 +437,7 @@ function buildPrecipChart(points, startDay, nDays, width = 400) {
     const barW = Math.max(1.4, w * 0.55);
     const yBar = yPrecip(point.precip);
     const ph = L.plotBottom - yBar;
-    bars += `<rect x="${(x + w * 0.22).toFixed(1)}" y="${yBar.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0.8, ph).toFixed(1)}" fill="${WX_PRECIP}" opacity="0.92">
+    bars += `<rect x="${(x + w * 0.22).toFixed(1)}" y="${yBar.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0.8, ph).toFixed(1)}" fill="${modelColor(point.source_model, "precip")}" opacity="0.92">
       <title>Pluie ${point.precip.toFixed(1)} mm</title>
     </rect>`;
   }
@@ -459,7 +490,7 @@ function buildLineChart(points, startDay, nDays, width, options) {
     <rect x="0" y="0" width="${width}" height="${L.height}" fill="transparent"></rect>
     ${grid}
     <text x="${L.x0 - 6}" y="${unitY}" text-anchor="end" fill="#7a7a7a" font-size="8px">${escapeHtml(options.unit)}</text>
-    ${paintModelLine(usable, startDay, nDays, L.x0, L.innerW, yOf, false)}
+    ${paintModelLine(usable, startDay, nDays, L.x0, L.innerW, yOf, false, options.palette)}
     ${hourAxisMarkup(startDay, nDays, L.x0, L.x1, L.innerW, L.axisY, L.plotTop, L.plotBottom, ticks, L.height)}
   </svg>`;
 }
@@ -469,6 +500,7 @@ function buildTempChart(points, startDay, nDays, width = 400) {
     key: "temp",
     label: "Température",
     unit: "°C",
+    palette: "temp",
     plotH: 92,
     range: niceLinearRange(points.map((p) => p.temp), 2, null),
   });
@@ -479,6 +511,7 @@ function buildDewChart(points, startDay, nDays, width = 400) {
     key: "dew",
     label: "Point de rosée",
     unit: "°C",
+    palette: "dew",
     plotH: 92,
     range: niceLinearRange(points.map((p) => p.dew), 2, null),
   });
@@ -492,6 +525,7 @@ function buildPressureChart(points, startDay, nDays, width = 400) {
     key: "pressure",
     label: "Pression",
     unit: "hPa",
+    palette: "pressure",
     plotH: 92,
     range,
   });
@@ -520,7 +554,7 @@ function buildWindChart(points, startDay, nDays, width = 400) {
   const arrows = subsample(points, step)
     .map((point) => {
       const x = xOf(point, startDay, nDays, L.x0, L.innerW);
-      const col = modelColor(point.source_model);
+      const col = modelColor(point.source_model, "wind");
       const y = L.dirY0 + 12;
       return `<g transform="translate(${x.toFixed(1)},${y}) rotate(${arrowRotation(point.dir)})">
         <path d="M0 -5.5 L3.2 5.5 L0 3.2 L-3.2 5.5 Z" fill="${col}"></path>
@@ -546,9 +580,9 @@ function buildWindChart(points, startDay, nDays, width = 400) {
     ${grid}
     ${kt8Line}
     <text x="${L.x0 - 6}" y="${L.plotTop + 8}" text-anchor="end" fill="#7a7a7a" font-size="8px">nds</text>
-    ${rangeFill(points, startDay, nDays, L.x0, L.innerW, yKt, "#b29f84")}
-    ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKt(p.gust), true)}
-    ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKt(p.mean), false)}
+    ${rangeFill(points, startDay, nDays, L.x0, L.innerW, yKt, "#8a8a8a")}
+    ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKt(p.gust), true, "wind")}
+    ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKt(p.mean), false, "wind")}
     ${hourAxisMarkup(startDay, nDays, L.x0, L.x1, L.innerW, L.axisY, L.plotTop, L.plotBottom, ticks, L.height)}
   </svg>`;
 }
@@ -585,11 +619,11 @@ function pickNearestPoint(points, startDay, nDays, geom, svgX) {
   return nearest;
 }
 
-function legendHtml(points, note) {
+function legendHtml(points, note, palette = "temp") {
   const usedModels = [...new Set((points || []).map((p) => p.source_model))];
   const keys = usedModels
     .map((model) => {
-      const col = modelColor(model);
+      const col = modelColor(model, palette);
       return `<span class="chart-key"><i style="background:${col}"></i>${escapeHtml(model)}</span>`;
     })
     .join("");
@@ -602,6 +636,7 @@ function legendHtml(points, note) {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     CURVE_SETS,
+    PALETTES,
     MODEL_COLORS,
     escapeHtml,
     modelColor,

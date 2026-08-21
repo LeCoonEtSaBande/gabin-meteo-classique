@@ -6,7 +6,7 @@
   --muted: #7a7a7a;
   --beige: #b29f84;
   --beige-dim: rgba(178, 159, 132, 0.35);
-  --sun-bg: #c9b06a;
+  --sun-bg: #ffcc33;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -89,7 +89,7 @@ html, body {
   margin: 0;
   font-size: 14px;
   font-weight: 500;
-  color: var(--beige);
+  color: #fff;
 }
 
 .detail-empty,
@@ -145,8 +145,7 @@ html, body {
 
 .spot-block { margin-bottom: 18px; }
 
-.spot-chart-title,
-.spot-info h3 {
+.spot-chart-title {
   margin: 0 0 6px;
   font-size: 13px;
   font-weight: 500;
@@ -195,8 +194,8 @@ html, body {
   background: var(--beige);
 }
 
-.chart-key i.wx-cloud { background: #8a8a8a; border-radius: 2px; }
-.chart-key i.wx-precip { background: #5a8aa3; border-radius: 2px; }
+.chart-key i.wx-cloud { background: #6e6e6e; border-radius: 2px; }
+.chart-key i.wx-precip { background: #3a8fd0; border-radius: 2px; }
 .chart-key i.wx-sun { background: var(--sun-bg); border-radius: 2px; }
 
 .chart-key-note {
@@ -205,9 +204,10 @@ html, body {
   letter-spacing: 0.02em;
 }
 
-.spot-info {
-  border-top: 1px solid var(--line);
-  padding: 12px 0 8px;
+.spot-meta {
+  margin: 0 0 12px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .spot-line {
@@ -217,33 +217,15 @@ html, body {
   line-height: 1.45;
 }
 
-.spot-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
+.spot-reqs {
+  white-space: pre-line;
 }
 
-.link-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-  padding: 0 10px;
-  border: 1px solid var(--beige-dim);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--beige);
-  font: inherit;
+.spot-coords {
+  margin: 0 0 8px;
+  color: var(--muted);
   font-size: 11px;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.link-btn.is-disabled {
-  opacity: 0.35;
-  pointer-events: none;
+  line-height: 1.4;
 }
 
 .daybar {
@@ -388,8 +370,7 @@ body.has-lightbox { overflow: hidden; }
   }
 
   .detail-bar h2 { font-size: 18px; }
-  .spot-chart-title,
-  .spot-info h3 { font-size: 16px; }
+  .spot-chart-title { font-size: 16px; }
 
   .modes {
     flex-direction: column;

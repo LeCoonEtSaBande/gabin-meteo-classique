@@ -24,7 +24,7 @@ GitHub Pages est configuré sur la **racine** de `affichage-web`.
 
 | Fichier | Parent | Usage |
 | --- | --- | --- |
-| `assets/spots_specs/*.csv` | `collecte-api-meteo` | Infos spot, liens |
+| `assets/spots_specs/*.csv` | `collecte-api-meteo` | Infos spot |
 | `data/processed/quotidien.json` | `traitement-donnees` | Jours / horodatage |
 | `data/processed/last_update.json` | `traitement-donnees` | Horodatage « MAJ » — rechargé à l’ouverture |
 | `data/processed/curves/AROMEIFS.csv` | `traitement-donnees` | Graphiques |

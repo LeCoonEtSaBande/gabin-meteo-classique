@@ -13,6 +13,8 @@ const {
   pickNearestPoint,
   buildChartSvg,
   legendHtml,
+  modelColor,
+  PALETTES,
   MEAN_STROKE,
   SUN_FILL,
 } = require("./courbes.js");
@@ -120,7 +122,7 @@ test("l'axe X : heures en journée, midi à 3 jours, coupures de jour à 5 jours
   assert.equal(five.dayBreaks.length, 4);
 });
 
-test("nébulosité : fond soleil, échelles nuages et soleil inversée", () => {
+test("nébulosité : fond soleil, échelles nuages et soleil inversée, 75 % soleil", () => {
   const svg = buildChartSvg("cloud", SAMPLE, "2026-08-20", 1, 400);
   assert.match(svg, /class="sun-bg"/);
   assert.match(svg, new RegExp(SUN_FILL));
@@ -131,8 +133,11 @@ test("nébulosité : fond soleil, échelles nuages et soleil inversée", () => {
   assert.match(svg, />50%</);
   assert.match(svg, />75%</);
   assert.match(svg, />100%</);
+  assert.equal((svg.match(/>75%</g) || []).length, 2);
   assert.match(svg, /class="hour-dot"/);
   assert.equal((svg.match(/class="hour-dot"/g) || []).length, 24);
+  assert.match(svg, new RegExp(PALETTES.cloud.AROMEHD));
+  assert.match(svg, new RegExp(PALETTES.cloud.IFS));
 });
 
 test("pluie en mm, température, rosée, pression et vent", () => {
@@ -165,11 +170,23 @@ test("le survol choisit le créneau le plus proche", () => {
   assert.equal(arrowRotation(hit.dir), 220);
 });
 
-test("légende des modèles", () => {
-  const legend = legendHtml(SAMPLE, `<span class="chart-key-note">plein = vent moyen</span>`);
+test("légende des modèles suit la palette du graphique", () => {
+  const legend = legendHtml(SAMPLE, `<span class="chart-key-note">plein = vent moyen</span>`, "wind");
   assert.match(legend, /AROMEHD/);
   assert.match(legend, /IFS/);
   assert.match(legend, /vent moyen/);
+  assert.match(legend, new RegExp(PALETTES.wind.AROMEHD));
+  assert.match(legend, new RegExp(PALETTES.wind.IFS));
+});
+
+test("température, rosée et pression ont des palettes distinctes", () => {
+  assert.notEqual(modelColor("AROMEHD", "temp"), modelColor("ARPEGE", "temp"));
+  assert.notEqual(modelColor("ARPEGE", "temp"), modelColor("IFS", "temp"));
+  assert.equal(modelColor("AROMEHD", "temp"), modelColor("AROMEHD", "wind"));
+  assert.match(buildChartSvg("temp", SAMPLE, "2026-08-20", 1, 400), new RegExp(PALETTES.temp.AROMEHD));
+  assert.match(buildChartSvg("dew", SAMPLE, "2026-08-20", 1, 400), new RegExp(PALETTES.dew.AROMEHD));
+  assert.match(buildChartSvg("pressure", SAMPLE, "2026-08-20", 1, 400), new RegExp(PALETTES.pressure.AROMEHD));
+  assert.match(buildChartSvg("precip", SAMPLE, "2026-08-20", 1, 400), new RegExp(PALETTES.precip.AROMEHD));
 });
 
 test("parseValidAt lit l'heure civile sans Date locale", () => {
