@@ -87,7 +87,7 @@ test("sliceHorizon garde la journée puis 3 jours", () => {
 test("indexCurves lit AROMEIFS avec rosée et pression", () => {
   const indexed = indexCurves([
     {
-      spot_key: "portes_les_valence",
+      spot_key: "ferme_de_sauze",
       curve_set: "AROMEIFS",
       valid_at: "2026-08-20T00:00",
       source_model: "AROMEHD",
@@ -101,9 +101,9 @@ test("indexCurves lit AROMEIFS avec rosée et pression", () => {
       pressure_source_model: "ARPEGE",
     },
   ]);
-  assert.equal(indexed.AROMEIFS.portes_les_valence[0].dew, 12.2);
-  assert.equal(indexed.AROMEIFS.portes_les_valence[0].pressure, 1011.4);
-  assert.equal(indexed.AROMEIFS.portes_les_valence[0].pressure_source, "ARPEGE");
+  assert.equal(indexed.AROMEIFS.ferme_de_sauze[0].dew, 12.2);
+  assert.equal(indexed.AROMEIFS.ferme_de_sauze[0].pressure, 1011.4);
+  assert.equal(indexed.AROMEIFS.ferme_de_sauze[0].pressure_source, "ARPEGE");
 });
 
 test("l'axe X : heures en journée, midi à 3 jours, coupures de jour à 5 jours", () => {

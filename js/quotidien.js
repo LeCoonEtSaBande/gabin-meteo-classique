@@ -14,7 +14,7 @@ let dataset = null;
 let dayKeys = [];
 let dayIndex = 0;
 let viewMode = "daily";
-let selectedZone = "valence";
+let selectedZone = "sauze";
 
 function todayKey(timeZone = PARIS_TZ) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -57,7 +57,7 @@ function renderDetail() {
   renderZoneDetail({
     selectedZone,
     dayKey: dayKeys[dayIndex],
-    fallbackLabel: "Portes-lès-Valence",
+    fallbackLabel: "Ferme de Sauze",
     viewMode,
   });
 }

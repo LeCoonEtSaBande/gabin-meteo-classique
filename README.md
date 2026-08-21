@@ -15,7 +15,7 @@ GitHub Pages est configuré sur la **racine** de `affichage-web`.
 ## Interface
 
 - Deux boutons : **Prévisions** (panneau détails) et **Balise** (bientôt disponible).
-- Pas de carte SVG. Un seul spot : Portes-lès-Valence.
+- Pas de carte SVG. Un seul spot : Ferme de Sauze.
 - Horizons **1 / 3 / 5 jours**, barre de jour en bas, vues PC et iPhone.
 - Graphiques, dans l’ordre : nébulosité (fond soleil), pluie, température, vent et rafales, point de rosée, pression.
 - Clic = zoom plein écran ; survol = infobulle.
