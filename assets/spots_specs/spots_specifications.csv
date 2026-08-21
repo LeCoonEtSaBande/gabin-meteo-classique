@@ -1,2 +1,4 @@
-spot_key;zone_key;display_name;short_term_model;display_wind_requirements;display_spot_infos;link_windguru;link_webcam;link_anemometer;Latitude_mise_a_leau;Longitude_mise_a_leau;AROMEHD_gridpoint_latitude;AROMEHD_gridpoint_longitude;AROMEHD_gridpoint_elevation;ARPEGE_gridpoint_latitude;ARPEGE_gridpoint_longitude;ARPEGE_gridpoint_elevation;IFS_gridpoint_latitude;IFS_gridpoint_longitude;IFS_gridpoint_elevation
-ferme_de_sauze;sauze;Ferme de Sauze;AROMEHD;;;;;;45.09604610002097;4.714684175474471;45.09000;4.71000;467;45.10000;4.70000;444;45.09666;4.75894;359
+spot_key;zone_key;display_name;short_term_model;display_wind_requirements;display_spot_infos;Latitude_spot;Longitude_spot;AROMEHD_gridpoint_latitude;AROMEHD_gridpoint_longitude;AROMEHD_gridpoint_elevation;ARPEGE_gridpoint_latitude;ARPEGE_gridpoint_longitude;ARPEGE_gridpoint_elevation;IFS_gridpoint_latitude;IFS_gridpoint_longitude;IFS_gridpoint_elevation
+ferme_de_sauze;sauze;Ferme de Sauze;AROMEHD;"AROMEHD = Court terme très fiable.
+ARPEGE = Moyen terme/fiable.
+IFS = Long terme peu fiable.";Bonne journée Papou;45.09604610002097;4.714684175474471;45.09000;4.71000;467;45.10000;4.70000;444;45.09666;4.75894;359
