@@ -4,7 +4,7 @@ Branche `collecte-api-meteo` : récupération des prévisions brutes Open-Meteo 
 
 Vue d’ensemble du dépôt : [README de `main`](https://github.com/LeCoonEtSaBande/gabin-meteo-classique/blob/main/README.md).
 
-**1 spot** : Portes-lès-Valence. Un run réussi déclenche ensuite le workflow *Traitement et affichage* sur `main` (courbe AROMEIFS + republication du site).
+**1 spot** : Ferme de Sauze. Un run réussi déclenche ensuite le workflow *Traitement et affichage* sur `main` (courbe AROMEIFS + republication du site).
 
 ## Horaires
 
