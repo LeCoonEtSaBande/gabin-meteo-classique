@@ -68,7 +68,7 @@ Déclenchement manuel : Actions → *Collecte Open-Meteo* (`force` ignore le fil
 ## Site
 
 - Page Sauze : boutons **Prévisions** / **Balise**. Graphiques : pluie, nébulosité, température, vent, rosée, pression.
-- Page **gabin-meteo-multisite** : boutons Lyon / Hyères / Méribel. Sans rosée ni pression. Méribel ajoute neige et isotherme 0 °C.
+- Page **gabin-meteo-multisite** : boutons Lyon / Hyères / Méribel / Sauze. Sans rosée ni pression sauf Sauze. Méribel ajoute neige et isotherme 0 °C.
 - Pas de carte SVG. Vues PC et iPhone, barre de jour, horizons 1 / 3 / 5 jours.
 - Clic = zoom plein écran ; survol = infobulle détaillée.
 
