@@ -66,7 +66,7 @@ Déclenchement manuel : Actions → *Collecte Open-Meteo* (`force` ignore le fil
 
 - Deux boutons : **Prévisions** (panneau détails) et **Balise** (bientôt disponible).
 - Pas de carte SVG. Vues PC et iPhone, barre de jour, horizons 1 / 3 / 5 jours.
-- Graphiques, dans l’ordre : nébulosité (fond soleil), pluie, température, vent et rafales, point de rosée, pression.
+- Graphiques, dans l’ordre : pluie, nébulosité (fond soleil), température, vent et rafales, point de rosée, pression.
 - Clic = zoom plein écran ; survol = infobulle détaillée.
 
 ## Lancer en local
