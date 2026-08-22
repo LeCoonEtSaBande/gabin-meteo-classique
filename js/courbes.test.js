@@ -14,6 +14,7 @@ const {
   buildChartSvg,
   legendHtml,
   modelColor,
+  niceMaxKmh,
   PALETTES,
   MEAN_STROKE,
   SUN_FILL,
@@ -147,7 +148,7 @@ test("pluie en mm, température, rosée, pression et vent", () => {
   assert.match(buildChartSvg("pressure", SAMPLE, "2026-08-20", 1, 400), /hPa/);
   const wind = buildChartSvg("wind", SAMPLE, "2026-08-20", 1, 400);
   assert.doesNotMatch(wind, /AROMEIFS/);
-  assert.match(wind, /class="kmh-ref"/);
+  assert.doesNotMatch(wind, /class="kmh-ref"/);
   assert.match(wind, /km\/h/);
   assert.match(wind, new RegExp(`stroke-width="${MEAN_STROKE}"`));
   assert.match(wind, /rotate\(220\)/);
@@ -189,6 +190,14 @@ test("température, rosée et pression ont des palettes distinctes", () => {
   assert.match(buildChartSvg("dew", SAMPLE, "2026-08-20", 1, 400), new RegExp(PALETTES.dew.AROMEHD));
   assert.match(buildChartSvg("pressure", SAMPLE, "2026-08-20", 1, 400), new RegExp(PALETTES.pressure.AROMEHD));
   assert.match(buildChartSvg("precip", SAMPLE, "2026-08-20", 1, 400), new RegExp(PALETTES.precip.AROMEHD));
+});
+
+test("l'échelle vent suit le max des rafales", () => {
+  assert.equal(niceMaxKmh([14, 30]), 30);
+  assert.equal(niceMaxKmh([31]), 35);
+  assert.equal(niceMaxKmh([8]), 10);
+  const wind = buildChartSvg("wind", SAMPLE, "2026-08-20", 1, 400);
+  assert.match(wind, /maxKmh&quot;:25/);
 });
 
 test("parseValidAt lit l'heure civile sans Date locale", () => {

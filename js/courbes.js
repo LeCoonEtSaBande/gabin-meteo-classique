@@ -40,8 +40,6 @@ const MODEL_COLORS = PALETTES.temp;
 const WX_CLOUD = "#6e6e6e";
 const WX_PRECIP = "#3a8fd0";
 const SUN_FILL = "#ffcc33";
-const REF_KMH = 15;
-const SCALE_MIN_KMH = 50;
 const MEAN_STROKE = 1.94;
 const GUST_STROKE = 1.13;
 
@@ -183,8 +181,10 @@ function rangeFill(points, startDay, nDays, x0, innerW, yKt, color) {
 }
 
 function niceMaxKmh(values) {
-  const peak = Math.max(SCALE_MIN_KMH + 2, ...values, 0);
-  return Math.ceil(peak / 10) * 10;
+  const peak = Math.max(0, ...values);
+  const padded = peak <= 0 ? 10 : peak;
+  if (padded <= 20) return Math.max(10, Math.ceil(padded / 5) * 5);
+  return Math.ceil(padded / 5) * 5;
 }
 
 function nicePrecipMax(values) {
@@ -538,8 +538,9 @@ function buildWindChart(points, startDay, nDays, width = 400) {
   const ticks = xTicks(startDay, nDays, L.x0, L.innerW);
   const maxKmh = niceMaxKmh(points.flatMap((p) => [p.mean, p.gust]));
   const yKmh = (kmh) => L.plotBottom - (kmh / maxKmh) * L.plotH;
+  const step = maxKmh <= 40 ? 5 : 10;
   const gridValues = [];
-  for (let kmh = 0; kmh <= maxKmh; kmh += 10) gridValues.push(kmh);
+  for (let kmh = 0; kmh <= maxKmh; kmh += step) gridValues.push(kmh);
   const grid = gridValues
     .map((kmh) => {
       const y = yKmh(kmh);
@@ -547,11 +548,8 @@ function buildWindChart(points, startDay, nDays, width = 400) {
         <text x="${L.x0 - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="#7a7a7a" font-size="8px">${kmh}</text>`;
     })
     .join("");
-  const yRef = yKmh(REF_KMH);
-  const refLine = `<line class="kmh-ref" x1="${L.x0}" y1="${yRef.toFixed(1)}" x2="${L.x1}" y2="${yRef.toFixed(1)}" stroke="#6a6a6a" stroke-dasharray="2 3" stroke-width="0.7"></line>
-    <text x="${L.x0 - 6}" y="${(yRef + 3).toFixed(1)}" text-anchor="end" fill="#8a8a8a" font-size="8px">${REF_KMH}</text>`;
-  const step = arrowStep(nDays);
-  const arrows = subsample(points, step)
+  const stepHours = arrowStep(nDays);
+  const arrows = subsample(points, stepHours)
     .map((point) => {
       const x = xOf(point, startDay, nDays, L.x0, L.innerW);
       const col = modelColor(point.source_model, "wind");
@@ -577,7 +575,6 @@ function buildWindChart(points, startDay, nDays, width = 400) {
     <rect x="0" y="0" width="${width}" height="${L.height}" fill="transparent"></rect>
     ${arrows}
     ${grid}
-    ${refLine}
     <text x="${L.x0 - 6}" y="${L.plotTop + 8}" text-anchor="end" fill="#7a7a7a" font-size="8px">km/h</text>
     ${rangeFill(points, startDay, nDays, L.x0, L.innerW, yKmh, "#8a8a8a")}
     ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKmh(p.gust), true, "wind")}
@@ -659,8 +656,6 @@ if (typeof module !== "undefined" && module.exports) {
     buildPressureChart,
     legendHtml,
     niceMaxKmh,
-    SCALE_MIN_KMH,
-    REF_KMH,
     MEAN_STROKE,
     GUST_STROKE,
     SUN_FILL,
