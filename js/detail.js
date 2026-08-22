@@ -12,16 +12,16 @@ const HORIZONS = [
 
 const CHARTS = [
   {
-    kind: "cloud",
-    title: "Nébulosité",
-    palette: "cloud",
-    note: `<span class="chart-key"><i class="wx-sun"></i>soleil</span>`,
-  },
-  {
     kind: "precip",
     title: "Précipitations",
     palette: "precip",
     note: `<span class="chart-key"><i class="wx-precip"></i>pluie (mm)</span>`,
+  },
+  {
+    kind: "cloud",
+    title: "Nébulosité",
+    palette: "cloud",
+    note: `<span class="chart-key"><i class="wx-sun"></i>soleil</span>`,
   },
   { kind: "temp", title: "Température", palette: "temp" },
   {

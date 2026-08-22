@@ -20,6 +20,10 @@ test("titres température et rosée sans « 2 m »", () => {
     assert.doesNotMatch(chart.title, /2 m/);
     assert.doesNotMatch(chart.note || "", /échelle droite/);
   }
+  assert.deepEqual(
+    CHARTS.map((c) => c.kind),
+    ["precip", "cloud", "temp", "wind", "dew", "pressure"]
+  );
 });
 
 test("métadonnées du spot en tête, coordonnées en bas", () => {
