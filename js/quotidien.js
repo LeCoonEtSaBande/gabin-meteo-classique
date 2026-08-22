@@ -11,8 +11,7 @@ const MOIS = [
 ];
 
 const PAGE = document.body.dataset.page || "sauze";
-const MULTISITE_ZONES = ["lyon", "hyeres", "meribel"];
-const HIDE_REQUIREMENTS = PAGE === "multisite";
+const MULTISITE_ZONES = ["lyon", "hyeres", "meribel", "sauze"];
 
 let dataset = null;
 let dayKeys = [];
@@ -63,7 +62,7 @@ function renderDetail() {
     dayKey: dayKeys[dayIndex],
     fallbackLabel: PAGE === "multisite" ? "Lyon" : "Ferme de Sauze",
     viewMode,
-    hideRequirements: HIDE_REQUIREMENTS,
+    hideRequirements: PAGE === "multisite" && selectedZone !== "sauze",
   });
 }
 

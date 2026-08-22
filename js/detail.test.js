@@ -44,8 +44,8 @@ test("titres température et rosée sans « 2 m »", () => {
     ["precip", "cloud", "temp", "wind"]
   );
   assert.deepEqual(
-    chartsForSpot({ zone_key: "meribel" }).map((c) => c.kind),
-    ["precip", "cloud", "snow", "temp", "freeze", "wind"]
+    chartsForSpot({ zone_key: "sauze" }).map((c) => c.kind),
+    ["precip", "cloud", "temp", "wind", "dew", "pressure"]
   );
 });
 
