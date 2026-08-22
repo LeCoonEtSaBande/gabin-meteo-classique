@@ -55,7 +55,7 @@ Déclenchement manuel : Actions → *Collecte Open-Meteo* (`force` ignore le fil
 - **1 spot** : Ferme de Sauze.
 - **3 modèles** Open-Meteo : AROMEHD, ARPEGE, IFS.
 - **Une seule courbe** `AROMEIFS` : AROMEHD → ARPEGE → IFS (chaque modèle jusqu’à son horizon).
-- Variables : nébulosité, précipitation, température 2 m, vent / rafales / direction (nœuds), point de rosée 2 m, pression de surface.
+- Variables : nébulosité, précipitation, température 2 m, vent / rafales / direction (km/h), point de rosée 2 m, pression de surface.
 - Pression absente d’AROME HD : repli **ARPEGE puis IFS** sur les créneaux AROME.
 
 | Jeu | Enchaînement court → long terme | Usage |
