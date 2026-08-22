@@ -10,29 +10,38 @@ const HORIZONS = [
   { days: 5, label: "5 jours" },
 ];
 
-const CHARTS = [
-  {
-    kind: "precip",
-    title: "Précipitations",
-    palette: "precip",
-    note: `<span class="chart-key"><i class="wx-precip"></i>pluie (mm)</span>`,
-  },
-  {
-    kind: "cloud",
-    title: "Nébulosité",
-    palette: "cloud",
-    note: `<span class="chart-key"><i class="wx-sun"></i>soleil</span>`,
-  },
-  { kind: "temp", title: "Température", palette: "temp" },
-  {
-    kind: "wind",
-    title: "Vent et rafales",
-    palette: "wind",
-    note: `<span class="chart-key-note">plein = vent moyen · pointillé = rafales</span>`,
-  },
-  { kind: "dew", title: "Point de rosée", palette: "dew" },
-  { kind: "pressure", title: "Pression de surface", palette: "pressure" },
-];
+const CHART_PRECIP = {
+  kind: "precip",
+  title: "Précipitations",
+  palette: "precip",
+  note: `<span class="chart-key"><i class="wx-precip"></i>pluie (mm)</span>`,
+};
+const CHART_CLOUD = {
+  kind: "cloud",
+  title: "Nébulosité",
+  palette: "cloud",
+  note: `<span class="chart-key"><i class="wx-sun"></i>soleil</span>`,
+};
+const CHART_SNOW = {
+  kind: "snow",
+  title: "Chutes de neige",
+  palette: "snow",
+  note: `<span class="chart-key"><i class="wx-snow"></i>neige (cm)</span>`,
+};
+const CHART_TEMP = { kind: "temp", title: "Température", palette: "temp" };
+const CHART_FREEZE = { kind: "freeze", title: "Isotherme 0 °C", palette: "freeze" };
+const CHART_WIND = {
+  kind: "wind",
+  title: "Vent et rafales",
+  palette: "wind",
+  note: `<span class="chart-key-note">plein = vent moyen · pointillé = rafales</span>`,
+};
+const CHART_DEW = { kind: "dew", title: "Point de rosée", palette: "dew" };
+const CHART_PRESSURE = { kind: "pressure", title: "Pression de surface", palette: "pressure" };
+
+const CHARTS = [CHART_PRECIP, CHART_CLOUD, CHART_TEMP, CHART_WIND, CHART_DEW, CHART_PRESSURE];
+const CHARTS_MULTISITE = [CHART_PRECIP, CHART_CLOUD, CHART_TEMP, CHART_WIND];
+const CHARTS_MERIBEL = [CHART_PRECIP, CHART_CLOUD, CHART_SNOW, CHART_TEMP, CHART_FREEZE, CHART_WIND];
 
 let horizonDays = 1;
 let zoneSpecs = [];
@@ -54,9 +63,16 @@ function seriesForSpot(spotKey, startDay) {
   return sliceHorizon(curveIndex.AROMEIFS[spotKey] || [], startDay, horizonDays);
 }
 
+function chartsForSpot(spot) {
+  const zone = (spot && spot.zone_key) || "";
+  if (zone === "meribel") return CHARTS_MERIBEL;
+  if (zone === "lyon" || zone === "hyeres") return CHARTS_MULTISITE;
+  return CHARTS;
+}
+
 function spotChartsHtml(spot, startDay) {
   const points = seriesForSpot(spot.spot_key, startDay);
-  return CHARTS.map(
+  return chartsForSpot(spot).map(
     (chart) => `<section class="spot-block" data-spot="${escapeHtml(spot.spot_key)}" data-kind="${chart.kind}">
       <h3 class="spot-chart-title">${escapeHtml(chart.title)}</h3>
       <div class="spot-chart" data-spot="${escapeHtml(spot.spot_key)}" data-kind="${chart.kind}">${buildChartSvg(chart.kind, points, startDay, horizonDays, 400)}</div>
@@ -65,8 +81,8 @@ function spotChartsHtml(spot, startDay) {
   ).join("");
 }
 
-function spotMetaHtml(spot) {
-  const req = (spot.display_wind_requirements || "").trim();
+function spotMetaHtml(spot, options = {}) {
+  const req = options.hideRequirements ? "" : (spot.display_wind_requirements || "").trim();
   const info = (spot.display_spot_infos || "").trim();
   return `<section class="spot-meta">
     ${info ? `<p class="spot-line spot-infos">${escapeHtml(info)}</p>` : ""}
@@ -131,6 +147,14 @@ function chartTipHtml(kind, point, nDays) {
       <div>${point.precip.toFixed(1)} mm</div>
       <div class="chart-tip-model">${escapeHtml(model)}</div>`;
   }
+  if (kind === "snow") {
+    const ssrc = point.snow_source && point.snow_source !== point.source_model
+      ? `neige ${point.snow_source}`
+      : model;
+    return `<div class="chart-tip-hour">${escapeHtml(hour)}</div>
+      <div>${(point.snow || 0).toFixed(1)} cm</div>
+      <div class="chart-tip-model">${escapeHtml(ssrc)}</div>`;
+  }
   if (kind === "temp") {
     return `<div class="chart-tip-hour">${escapeHtml(hour)}</div>
       <div>${point.temp.toFixed(1)} °C</div>
@@ -149,6 +173,13 @@ function chartTipHtml(kind, point, nDays) {
     return `<div class="chart-tip-hour">${escapeHtml(hour)}</div>
       <div>${escapeHtml(val)}</div>
       <div class="chart-tip-model">${escapeHtml(psrc)}</div>`;
+  }
+  if (kind === "freeze") {
+    const fsrc = point.freeze_source || "ICON";
+    const val = Number.isFinite(point.freeze) ? `${Math.round(point.freeze)} m` : "—";
+    return `<div class="chart-tip-hour">${escapeHtml(hour)}</div>
+      <div>${escapeHtml(val)}</div>
+      <div class="chart-tip-model">${escapeHtml(`isotherme ${fsrc}`)}</div>`;
   }
   const rot = arrowRotation(point.dir);
   return `<div class="chart-tip-hour">${escapeHtml(hour)}</div>
@@ -249,7 +280,7 @@ function bindLightboxOnce() {
   });
 }
 
-function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode }) {
+function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode, hideRequirements }) {
   const empty = document.getElementById("detail-empty");
   const body = document.getElementById("detail-body");
   const title = document.getElementById("detail-title");
@@ -293,7 +324,7 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode }) {
   ).join("");
 
   body.innerHTML = `
-    ${spots.map((spot) => spotMetaHtml(spot)).join("")}
+    ${spots.map((spot) => spotMetaHtml(spot, { hideRequirements })).join("")}
     <div class="horizon-bar" role="tablist" aria-label="Horizon de prévision">${horizon}</div>
     <div class="charts">${spots.map((spot) => spotChartsHtml(spot, dayKey)).join("")}</div>
     ${spots.map((spot) => spotCoordsHtml(spot)).join("")}`;
@@ -301,7 +332,7 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode }) {
   body.querySelectorAll("[data-horizon]").forEach((btn) => {
     btn.addEventListener("click", () => {
       horizonDays = Number(btn.dataset.horizon) || 1;
-      renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode });
+      renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode, hideRequirements });
     });
   });
 
@@ -309,7 +340,7 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode }) {
     const key = el.dataset.spot;
     const kind = el.dataset.kind;
     const spot = spots.find((item) => item.spot_key === key);
-    const chart = CHARTS.find((item) => item.kind === kind);
+    const chart = chartsForSpot(spot).find((item) => item.kind === kind);
     if (!spot || !chart) return;
     const payload = {
       kind,
@@ -329,6 +360,9 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     HORIZONS,
     CHARTS,
+    CHARTS_MULTISITE,
+    CHARTS_MERIBEL,
+    chartsForSpot,
     spotMetaHtml,
     spotCoordsHtml,
     specsForZone,

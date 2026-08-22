@@ -107,6 +107,8 @@ test("indexCurves lit AROMEIFS avec rosée et pression", () => {
   assert.equal(indexed.AROMEIFS.ferme_de_sauze[0].dew, 12.2);
   assert.equal(indexed.AROMEIFS.ferme_de_sauze[0].pressure, 1011.4);
   assert.equal(indexed.AROMEIFS.ferme_de_sauze[0].pressure_source, "ARPEGE");
+  assert.equal(indexed.AROMEIFS.ferme_de_sauze[0].snow, 0);
+  assert.equal(indexed.AROMEIFS.ferme_de_sauze[0].freeze, null);
 });
 
 test("l'axe X : heures en journée, midi à 3 jours, coupures de jour à 5 jours", () => {
@@ -143,6 +145,9 @@ test("nébulosité : fond soleil, échelles nuages et soleil inversée, 75 % sol
 
 test("pluie en mm, température, rosée, pression et vent", () => {
   assert.match(buildChartSvg("precip", SAMPLE, "2026-08-20", 1, 400), /Pluie \(mm\)/);
+  const snowSample = SAMPLE.map((p) => ({ ...p, snow: 1.2, freeze: 2400 }));
+  assert.match(buildChartSvg("snow", snowSample, "2026-08-20", 1, 400), /Neige \(cm\)/);
+  assert.match(buildChartSvg("freeze", snowSample, "2026-08-20", 1, 400), />m</);
   const temp = buildChartSvg("temp", SAMPLE, "2026-08-20", 1, 400);
   const dew = buildChartSvg("dew", SAMPLE, "2026-08-20", 1, 400);
   const pressure = buildChartSvg("pressure", SAMPLE, "2026-08-20", 1, 400);

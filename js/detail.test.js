@@ -5,7 +5,14 @@ const path = require("node:path");
 const { parseCsv } = require("./csv.js");
 
 Object.assign(global, require("./courbes.js"));
-const { CHARTS, spotMetaHtml, spotCoordsHtml } = require("./detail.js");
+const {
+  CHARTS,
+  CHARTS_MULTISITE,
+  CHARTS_MERIBEL,
+  chartsForSpot,
+  spotMetaHtml,
+  spotCoordsHtml,
+} = require("./detail.js");
 
 test("titres température et rosée sans « 2 m »", () => {
   assert.equal(
@@ -24,6 +31,22 @@ test("titres température et rosée sans « 2 m »", () => {
     CHARTS.map((c) => c.kind),
     ["precip", "cloud", "temp", "wind", "dew", "pressure"]
   );
+  assert.deepEqual(
+    CHARTS_MULTISITE.map((c) => c.kind),
+    ["precip", "cloud", "temp", "wind"]
+  );
+  assert.deepEqual(
+    CHARTS_MERIBEL.map((c) => c.kind),
+    ["precip", "cloud", "snow", "temp", "freeze", "wind"]
+  );
+  assert.deepEqual(
+    chartsForSpot({ zone_key: "lyon" }).map((c) => c.kind),
+    ["precip", "cloud", "temp", "wind"]
+  );
+  assert.deepEqual(
+    chartsForSpot({ zone_key: "meribel" }).map((c) => c.kind),
+    ["precip", "cloud", "snow", "temp", "freeze", "wind"]
+  );
 });
 
 test("métadonnées du spot en tête, coordonnées en bas", () => {
@@ -37,6 +60,12 @@ test("métadonnées du spot en tête, coordonnées en bas", () => {
   assert.match(html, /Court terme très fiable/);
   assert.match(html, /Mise à jour quotidienne a 6h30 et 19h30/);
   assert.doesNotMatch(html, /Latitude|Longitude|Windguru|Webcam|Anémo|link-btn|Ferme de Sauze/);
+  const hidden = spotMetaHtml(
+    { display_spot_infos: "Mise à jour quotidienne a 6h30 et 19h30", display_wind_requirements: "AROMEHD = x" },
+    { hideRequirements: true }
+  );
+  assert.match(hidden, /Mise à jour quotidienne a 6h30 et 19h30/);
+  assert.doesNotMatch(hidden, /AROMEHD/);
   const coords = spotCoordsHtml(spot);
   assert.match(coords, /Latitude 45\.09604610002097/);
   assert.match(coords, /Longitude 4\.714684175474471/);

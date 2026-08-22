@@ -7,19 +7,20 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Gabin-météo classique</title>
+  <title>Gabin-météo multisite</title>
   <link rel="stylesheet" href="css/app.css">
 </head>
-<body data-page="sauze">
+<body data-page="multisite">
   <div class="shell" id="shell">
-    <nav class="modes" aria-label="Vues">
-      <button type="button" class="mode is-active" data-mode="daily" id="mode-daily">Prévisions</button>
-      <button type="button" class="mode" data-mode="buoys" id="mode-buoys">Balise</button>
+    <nav class="modes" aria-label="Sites">
+      <button type="button" class="mode is-active" data-zone="lyon">Lyon</button>
+      <button type="button" class="mode" data-zone="hyeres">Hyères</button>
+      <button type="button" class="mode" data-zone="meribel">Méribel</button>
     </nav>
 
     <aside class="detail is-open" id="detail" aria-label="Panneau">
       <div class="detail-bar">
-        <h2 id="detail-title">Ferme de Sauze</h2>
+        <h2 id="detail-title">Lyon</h2>
       </div>
       <p class="detail-empty" id="detail-empty" hidden>Chargement des prévisions…</p>
       <div class="detail-body" id="detail-body"></div>

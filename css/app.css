@@ -68,6 +68,11 @@ html, body {
   border-bottom-color: var(--beige);
 }
 
+body[data-page="multisite"] .mode {
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
+
 .detail {
   display: flex;
   flex-direction: column;
@@ -196,6 +201,7 @@ html, body {
 
 .chart-key i.wx-cloud { background: #6e6e6e; border-radius: 2px; }
 .chart-key i.wx-precip { background: #3a8fd0; border-radius: 2px; }
+.chart-key i.wx-snow { background: #9ec9f0; border-radius: 2px; }
 .chart-key i.wx-sun { background: var(--sun-bg); border-radius: 2px; }
 
 .chart-key-note {

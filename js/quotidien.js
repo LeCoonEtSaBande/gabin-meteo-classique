@@ -10,11 +10,15 @@ const MOIS = [
   "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
 ];
 
+const PAGE = document.body.dataset.page || "sauze";
+const MULTISITE_ZONES = ["lyon", "hyeres", "meribel"];
+const HIDE_REQUIREMENTS = PAGE === "multisite";
+
 let dataset = null;
 let dayKeys = [];
 let dayIndex = 0;
 let viewMode = "daily";
-let selectedZone = "sauze";
+let selectedZone = PAGE === "multisite" ? "lyon" : "sauze";
 
 function todayKey(timeZone = PARIS_TZ) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -57,15 +61,25 @@ function renderDetail() {
   renderZoneDetail({
     selectedZone,
     dayKey: dayKeys[dayIndex],
-    fallbackLabel: "Ferme de Sauze",
+    fallbackLabel: PAGE === "multisite" ? "Lyon" : "Ferme de Sauze",
     viewMode,
+    hideRequirements: HIDE_REQUIREMENTS,
   });
 }
 
 function setMode(mode) {
   viewMode = mode;
-  document.getElementById("mode-daily").classList.toggle("is-active", mode === "daily");
-  document.getElementById("mode-buoys").classList.toggle("is-active", mode === "buoys");
+  document.getElementById("mode-daily")?.classList.toggle("is-active", mode === "daily");
+  document.getElementById("mode-buoys")?.classList.toggle("is-active", mode === "buoys");
+  renderDetail();
+}
+
+function setSite(zoneKey) {
+  selectedZone = zoneKey;
+  viewMode = "daily";
+  document.querySelectorAll(".mode[data-zone]").forEach((btn) => {
+    btn.classList.toggle("is-active", btn.dataset.zone === zoneKey);
+  });
   renderDetail();
 }
 
@@ -85,8 +99,11 @@ function bindUi() {
     dayIndex += 1;
     renderAll();
   });
-  document.getElementById("mode-daily").addEventListener("click", () => setMode("daily"));
-  document.getElementById("mode-buoys").addEventListener("click", () => setMode("buoys"));
+  document.getElementById("mode-daily")?.addEventListener("click", () => setMode("daily"));
+  document.getElementById("mode-buoys")?.addEventListener("click", () => setMode("buoys"));
+  document.querySelectorAll(".mode[data-zone]").forEach((btn) => {
+    btn.addEventListener("click", () => setSite(btn.dataset.zone));
+  });
 }
 
 function usableDays(data) {
@@ -135,14 +152,24 @@ async function boot() {
   try {
     const [, data] = await Promise.all([loadDetailAssets(), loadDataset()]);
     dataset = data;
-    const firstSpot = Object.values(dataset.spots || {})[0];
-    if (firstSpot?.zone_key) selectedZone = firstSpot.zone_key;
+    if (PAGE === "multisite") {
+      const available = MULTISITE_ZONES.filter((zone) =>
+        Object.values(dataset.spots || {}).some((spot) => spot.zone_key === zone)
+      );
+      selectedZone = available[0] || "lyon";
+    } else {
+      selectedZone = "sauze";
+    }
     dayKeys = usableDays(dataset);
     if (!dayKeys.length) throw new Error("Aucun jour disponible à partir d'aujourd'hui");
     const today = todayKey();
     dayIndex = Math.max(0, dayKeys.indexOf(today));
     bindUi();
-    setMode("daily");
+    if (PAGE === "multisite") {
+      setSite(selectedZone);
+    } else {
+      setMode("daily");
+    }
     renderAll();
   } catch (error) {
     status(error.message || String(error));

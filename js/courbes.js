@@ -23,6 +23,16 @@ const PALETTES = {
     ARPEGE: "#3a8fd0",
     IFS: "#1a4a8c",
   },
+  snow: {
+    AROMEHD: "#e8f4ff",
+    ARPEGE: "#9ec9f0",
+    IFS: "#4a7eb5",
+  },
+  freeze: {
+    AROMEHD: "#7fd4c8",
+    ARPEGE: "#3aa89a",
+    IFS: "#1f6f66",
+  },
   pressure: {
     AROMEHD: "#ffc1c1",
     ARPEGE: "#f07070",
@@ -39,6 +49,7 @@ const MODEL_COLORS = PALETTES.temp;
 
 const WX_CLOUD = "#6e6e6e";
 const WX_PRECIP = "#3a8fd0";
+const WX_SNOW = "#9ec9f0";
 const SUN_FILL = "#ffcc33";
 const MEAN_STROKE = 1.94;
 const GUST_STROKE = 1.13;
@@ -114,6 +125,10 @@ function indexCurves(rows) {
     const temp = Number(row.temperature_2m_c);
     const dew = Number(row.dew_point_2m_c);
     const pressure = Number(row.surface_pressure_hpa);
+    const snowRaw = String(row.snowfall_cm ?? "").trim();
+    const freezeRaw = String(row.freezing_level_height_m ?? "").trim();
+    const snow = snowRaw === "" ? 0 : Number(snowRaw);
+    const freeze = freezeRaw === "" ? NaN : Number(freezeRaw);
     out[set][spot] ||= [];
     out[set][spot].push({
       valid_at: row.valid_at,
@@ -127,6 +142,10 @@ function indexCurves(rows) {
       dew: Number.isFinite(dew) ? dew : 0,
       pressure: Number.isFinite(pressure) ? pressure : null,
       pressure_source: row.pressure_source_model || row.source_model,
+      snow: Number.isFinite(snow) ? snow : 0,
+      snow_source: row.snow_source_model || row.source_model,
+      freeze: Number.isFinite(freeze) ? freeze : null,
+      freeze_source: row.freeze_source_model || "",
     });
   }
   for (const list of Object.values(out.AROMEIFS)) {
@@ -412,42 +431,68 @@ function buildCloudChart(points, startDay, nDays, width = 400) {
 }
 
 function buildPrecipChart(points, startDay, nDays, width = 400) {
+  return buildBarChart(points, startDay, nDays, width, {
+    key: "precip",
+    palette: "precip",
+    unit: "Pluie (mm)",
+    label: "Précipitations",
+    titleFmt: (v) => `Pluie ${v.toFixed(1)} mm`,
+    color: WX_PRECIP,
+    skipZero: true,
+  });
+}
+
+function buildSnowChart(points, startDay, nDays, width = 400) {
+  return buildBarChart(points, startDay, nDays, width, {
+    key: "snow",
+    palette: "snow",
+    unit: "Neige (cm)",
+    label: "Chutes de neige",
+    titleFmt: (v) => `Neige ${v.toFixed(1)} cm`,
+    color: WX_SNOW,
+    skipZero: true,
+  });
+}
+
+function buildBarChart(points, startDay, nDays, width, options) {
   if (!points.length) return emptyChart(width);
+  const key = options.key;
   const L = layout(width, 78, { padL: 44, padR: 18 });
   const ticks = xTicks(startDay, nDays, L.x0, L.innerW);
   const hourW = L.innerW / (nDays * 24);
-  const precipMax = nicePrecipMax(points.map((p) => p.precip));
-  const yPrecip = (mm) => L.plotBottom - (Math.max(0, mm) / precipMax) * L.plotH;
-  const gridVals = [0, precipMax / 2, precipMax];
+  const maxVal = nicePrecipMax(points.map((p) => p[key] || 0));
+  const yOf = (mm) => L.plotBottom - (Math.max(0, mm) / maxVal) * L.plotH;
+  const gridVals = [0, maxVal / 2, maxVal];
   const grid = gridVals
     .map((mm) => {
-      const y = yPrecip(mm);
+      const y = yOf(mm);
       const label = Number.isInteger(mm) ? String(mm) : mm.toFixed(1);
       return `<line x1="${L.x0}" y1="${y.toFixed(1)}" x2="${L.x1}" y2="${y.toFixed(1)}" stroke="#2a2a2a" stroke-width="0.4"></line>
-        <text class="wx-tick" x="${L.x0 - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="${WX_PRECIP}" font-size="8px">${label}</text>`;
+        <text class="wx-tick" x="${L.x0 - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="${options.color}" font-size="8px">${label}</text>`;
     })
     .join("");
   let bars = "";
   for (let i = 0; i < points.length; i += 1) {
     const point = points[i];
-    if (point.precip <= 0) continue;
+    const value = point[key] || 0;
+    if (options.skipZero && value <= 0) continue;
     const x = xOf(point, startDay, nDays, L.x0, L.innerW);
     const next = points[i + 1];
     const w = next ? Math.max(1, xOf(next, startDay, nDays, L.x0, L.innerW) - x) : hourW;
     const barW = Math.max(1.4, w * 0.55);
-    const yBar = yPrecip(point.precip);
+    const yBar = yOf(value);
     const ph = L.plotBottom - yBar;
-    bars += `<rect x="${(x + w * 0.22).toFixed(1)}" y="${yBar.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0.8, ph).toFixed(1)}" fill="${modelColor(point.source_model, "precip")}" opacity="0.92">
-      <title>Pluie ${point.precip.toFixed(1)} mm</title>
+    bars += `<rect x="${(x + w * 0.22).toFixed(1)}" y="${yBar.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0.8, ph).toFixed(1)}" fill="${modelColor(point.source_model, options.palette)}" opacity="0.92">
+      <title>${escapeHtml(options.titleFmt(value))}</title>
     </rect>`;
   }
   const midY = (L.plotTop + L.plotBottom) / 2;
-  const geom = { kind: "precip", x0: L.x0, innerW: L.innerW, plotTop: L.plotTop, plotBottom: L.plotBottom, precipMax, startDay, nDays, width, height: L.height };
-  return `<svg class="spot-svg" viewBox="0 0 ${width} ${L.height}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Précipitations" data-geom="${escapeHtml(JSON.stringify(geom))}">
+  const geom = { kind: key, x0: L.x0, innerW: L.innerW, plotTop: L.plotTop, plotBottom: L.plotBottom, precipMax: maxVal, startDay, nDays, width, height: L.height };
+  return `<svg class="spot-svg" viewBox="0 0 ${width} ${L.height}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${escapeHtml(options.label)}" data-geom="${escapeHtml(JSON.stringify(geom))}">
     <rect x="0" y="0" width="${width}" height="${L.height}" fill="transparent"></rect>
     ${grid}
     ${bars}
-    <text class="wx-unit" transform="translate(11 ${midY.toFixed(1)}) rotate(-90)" text-anchor="middle" fill="${WX_PRECIP}" font-size="6.5px">Pluie (mm)</text>
+    <text class="wx-unit" transform="translate(11 ${midY.toFixed(1)}) rotate(-90)" text-anchor="middle" fill="${options.color}" font-size="6.5px">${escapeHtml(options.unit)}</text>
     ${hourAxisMarkup(startDay, nDays, L.x0, L.x1, L.innerW, L.axisY, L.plotTop, L.plotBottom, ticks, L.height)}
   </svg>`;
 }
@@ -514,6 +559,34 @@ function buildDewChart(points, startDay, nDays, width = 400) {
     palette: "dew",
     plotH: 92,
     range: niceLinearRange(points.map((p) => p.dew), 2, null),
+  });
+}
+
+function niceAltitudeRange(values) {
+  const nums = values.filter((v) => Number.isFinite(v));
+  if (!nums.length) return { min: 0, max: 3000, step: 500 };
+  let min = Math.min(...nums);
+  let max = Math.max(...nums);
+  const pad = 100;
+  min -= pad;
+  max += pad;
+  if (min < 0) min = 0;
+  const span = max - min;
+  const step = span <= 400 ? 100 : span <= 1000 ? 200 : span <= 2500 ? 500 : 1000;
+  min = Math.floor(min / step) * step;
+  max = Math.ceil(max / step) * step;
+  if (max === min) max = min + step;
+  return { min, max, step };
+}
+
+function buildFreezeChart(points, startDay, nDays, width = 400) {
+  return buildLineChart(points, startDay, nDays, width, {
+    key: "freeze",
+    label: "Isotherme 0 °C",
+    unit: "m",
+    palette: "freeze",
+    plotH: 92,
+    range: niceAltitudeRange(points.map((p) => p.freeze)),
   });
 }
 
@@ -586,7 +659,9 @@ function buildWindChart(points, startDay, nDays, width = 400) {
 const CHART_BUILDERS = {
   cloud: buildCloudChart,
   precip: buildPrecipChart,
+  snow: buildSnowChart,
   temp: buildTempChart,
+  freeze: buildFreezeChart,
   wind: buildWindChart,
   dew: buildDewChart,
   pressure: buildPressureChart,
@@ -650,10 +725,12 @@ if (typeof module !== "undefined" && module.exports) {
     buildChartSvg,
     buildCloudChart,
     buildPrecipChart,
+    buildSnowChart,
     buildTempChart,
     buildWindChart,
     buildDewChart,
     buildPressureChart,
+    buildFreezeChart,
     legendHtml,
     niceMaxKmh,
     MEAN_STROKE,
