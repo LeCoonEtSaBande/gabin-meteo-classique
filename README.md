@@ -19,7 +19,7 @@ GitHub Pages est configuré sur la **racine** de `affichage-web`.
 - `index.html` — Ferme de Sauze. Boutons **Prévisions** et **Balise**. Graphiques : pluie, nébulosité, température, vent, point de rosée, pression. Infos vent AROMEHD / ARPEGE / IFS.
 - `gabin-meteo-multisite.html` — Lyon, Hyères, Méribel, Sauze. Quatre boutons de site, pas de balise. Infos des trois premiers : « Mise à jour quotidienne a 6h30 et 19h30 » (sans exigences vent). Graphiques : pluie, nébulosité, température, vent. À Méribel : chutes de neige sous la nébulosité, isotherme 0 °C sous la température. À Sauze : même panneau que la page d’accueil (rosée, pression, infos vent).
 
-Horizons **1 / 3 / 5 jours**, barre de jour en bas, vues PC et iPhone. Clic = zoom plein écran ; survol = infobulle.
+- Horizons **1 / 3 / 5 jours** (bandeau fixe sous le titre, comme le jour en bas), barre de jour en bas, vues PC et iPhone. Clic = zoom plein écran ; survol = infobulle.
 
 ## Données : copies publiées, ne pas éditer
 

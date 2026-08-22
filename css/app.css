@@ -124,10 +124,20 @@ body[data-page="multisite"] .mode {
 
 .detail-status { margin: 8px 0; }
 
+.horizon-strip {
+  flex-shrink: 0;
+  padding: 8px 14px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--elev);
+  z-index: 4;
+}
+
+.horizon-strip[hidden] { display: none; }
+
 .horizon-bar {
   display: flex;
   gap: 6px;
-  margin-bottom: 12px;
+  margin: 0;
 }
 
 .horizon-btn {

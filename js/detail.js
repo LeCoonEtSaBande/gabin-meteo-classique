@@ -286,6 +286,8 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode, hideR
   const title = document.getElementById("detail-title");
   const soon = document.getElementById("soon");
   const pane = document.getElementById("detail");
+  const horizonStrip = document.getElementById("horizon-strip");
+  const horizonBar = document.getElementById("horizon-bar");
   const scrollTop = body ? body.scrollTop : 0;
   pane.classList.add("is-open");
 
@@ -294,6 +296,7 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode, hideR
     empty.hidden = true;
     body.hidden = true;
     soon.hidden = false;
+    if (horizonStrip) horizonStrip.hidden = true;
     return;
   }
 
@@ -305,6 +308,7 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode, hideR
   if (!detailReady) {
     empty.hidden = true;
     body.hidden = false;
+    if (horizonStrip) horizonStrip.hidden = true;
     body.innerHTML = `<p class="detail-status">${escapeHtml(detailError || "Chargement des courbes…")}</p>`;
     return;
   }
@@ -313,6 +317,7 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode, hideR
     empty.hidden = false;
     empty.textContent = "Aucun spot à afficher.";
     body.hidden = true;
+    if (horizonStrip) horizonStrip.hidden = true;
     return;
   }
 
@@ -323,13 +328,19 @@ function renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode, hideR
       `<button type="button" class="horizon-btn${h.days === horizonDays ? " is-active" : ""}" data-horizon="${h.days}">${h.label}</button>`
   ).join("");
 
+  if (horizonBar) {
+    horizonBar.innerHTML = horizon;
+    if (horizonStrip) horizonStrip.hidden = false;
+  }
+
   body.innerHTML = `
     ${spots.map((spot) => spotMetaHtml(spot, { hideRequirements })).join("")}
-    <div class="horizon-bar" role="tablist" aria-label="Horizon de prévision">${horizon}</div>
+    ${horizonBar ? "" : `<div class="horizon-bar" role="tablist" aria-label="Horizon de prévision">${horizon}</div>`}
     <div class="charts">${spots.map((spot) => spotChartsHtml(spot, dayKey)).join("")}</div>
     ${spots.map((spot) => spotCoordsHtml(spot)).join("")}`;
 
-  body.querySelectorAll("[data-horizon]").forEach((btn) => {
+  const horizonRoot = horizonBar || body;
+  horizonRoot.querySelectorAll("[data-horizon]").forEach((btn) => {
     btn.addEventListener("click", () => {
       horizonDays = Number(btn.dataset.horizon) || 1;
       renderZoneDetail({ selectedZone, dayKey, fallbackLabel, viewMode, hideRequirements });
