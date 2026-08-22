@@ -141,6 +141,12 @@ test("nébulosité : fond soleil, échelles nuages et soleil inversée, 75 % sol
   assert.equal((svg.match(/class="hour-dot"/g) || []).length, 24);
   assert.match(svg, new RegExp(PALETTES.cloud.AROMEHD));
   assert.match(svg, new RegExp(PALETTES.cloud.IFS));
+  const precip = buildChartSvg("precip", SAMPLE, "2026-08-20", 1, 400);
+  const cloudGeom = JSON.parse(svg.match(/data-geom="([^"]+)"/)[1].replaceAll("&quot;", '"'));
+  const precipGeom = JSON.parse(precip.match(/data-geom="([^"]+)"/)[1].replaceAll("&quot;", '"'));
+  assert.equal(cloudGeom.x0, precipGeom.x0);
+  assert.equal(cloudGeom.innerW, precipGeom.innerW);
+  assert.equal(PALETTES.cloud.AROMEHD, "#b0b0b0");
 });
 
 test("pluie en mm, température, rosée, pression et vent", () => {

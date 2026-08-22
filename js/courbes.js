@@ -39,7 +39,7 @@ const PALETTES = {
     IFS: "#d44545",
   },
   cloud: {
-    AROMEHD: "#cfcfcf",
+    AROMEHD: "#b0b0b0",
     ARPEGE: "#6e6e6e",
     IFS: "#3a3a3a",
   },
@@ -380,7 +380,7 @@ function paintModelLine(points, startDay, nDays, x0, innerW, yOf, dashed, palett
 
 function buildCloudChart(points, startDay, nDays, width = 400) {
   if (!points.length) return emptyChart(width);
-  const L = layout(width, 92, { padL: 58, padR: 58 });
+  const L = layout(width, 92, { padL: 44, padR: 18 });
   const ticks = xTicks(startDay, nDays, L.x0, L.innerW);
   const hourW = L.innerW / (nDays * 24);
   const yCloud = (pct) => L.plotBottom - (Math.max(0, Math.min(100, pct)) / 100) * L.plotH;
@@ -414,7 +414,7 @@ function buildCloudChart(points, startDay, nDays, width = 400) {
   const right = sunTicks
     .map((tick) => {
       const y = yCloud(tick.cloud);
-      return `<text class="wx-tick" x="${L.x1 + 6}" y="${(y + 3).toFixed(1)}" text-anchor="start" fill="${SUN_FILL}" font-size="8px">${tick.sun}%</text>`;
+      return `<text class="wx-tick" x="${(L.x1 - 3).toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="${SUN_FILL}" font-size="8px">${tick.sun}%</text>`;
     })
     .join("");
   const midY = (L.plotTop + L.plotBottom) / 2;
@@ -425,7 +425,7 @@ function buildCloudChart(points, startDay, nDays, width = 400) {
     ${bars}
     ${right}
     <text class="wx-unit" transform="translate(11 ${midY.toFixed(1)}) rotate(-90)" text-anchor="middle" fill="${WX_CLOUD}" font-size="6.5px">Nuages</text>
-    <text class="wx-unit" transform="translate(${width - 11} ${midY.toFixed(1)}) rotate(-90)" text-anchor="middle" fill="${SUN_FILL}" font-size="6.5px">Soleil</text>
+    <text class="wx-unit" transform="translate(${L.x1 + 11} ${midY.toFixed(1)}) rotate(-90)" text-anchor="middle" fill="${SUN_FILL}" font-size="6.5px">Soleil</text>
     ${hourAxisMarkup(startDay, nDays, L.x0, L.x1, L.innerW, L.axisY, L.plotTop, L.plotBottom, ticks, L.height)}
   </svg>`;
 }
