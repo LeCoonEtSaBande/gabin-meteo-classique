@@ -156,7 +156,7 @@ function chartTipHtml(kind, point, nDays) {
       <svg class="chart-tip-arrow" viewBox="0 0 10 14" aria-hidden="true" style="transform:rotate(${rot}deg)">
         <path d="M5 0 L10 14 L5 10 L0 14 Z" fill="currentColor"></path>
       </svg>
-      <span>${Math.round(point.mean)} nds</span>
+      <span>${Math.round(point.mean)} km/h</span>
       <span class="chart-tip-gust">raf. ${Math.round(point.gust)}</span>
     </div>
     <div class="chart-tip-model">${escapeHtml(model)}</div>`;

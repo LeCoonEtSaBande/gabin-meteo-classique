@@ -16,24 +16,24 @@ const TEMP_STOPS = [
 
 const WIND_STOPS = [
   [0, MUTED],
-  [8, MUTED],
-  [9, [120, 140, 150]],
-  [12, [60, 176, 67]],
-  [15, [212, 176, 64]],
-  [20, [232, 132, 32]],
-  [30, [224, 48, 48]],
-  [40, [200, 74, 212]],
+  [15, MUTED],
+  [17, [120, 140, 150]],
+  [22, [60, 176, 67]],
+  [28, [212, 176, 64]],
+  [37, [232, 132, 32]],
+  [56, [224, 48, 48]],
+  [74, [200, 74, 212]],
 ];
 
 const GUST_STOPS = [
   [0, MUTED],
-  [12, MUTED],
-  [15, [120, 140, 150]],
-  [18, [60, 176, 67]],
-  [22, [212, 176, 64]],
-  [28, [232, 132, 32]],
-  [35, [224, 48, 48]],
-  [45, [200, 74, 212]],
+  [22, MUTED],
+  [28, [120, 140, 150]],
+  [33, [60, 176, 67]],
+  [41, [212, 176, 64]],
+  [52, [232, 132, 32]],
+  [65, [224, 48, 48]],
+  [83, [200, 74, 212]],
 ];
 
 function lerp(a, b, t) {
@@ -106,12 +106,12 @@ function isUsableSession(day) {
   return clipSlot(day) != null;
 }
 
-function windColor(kt) {
-  return colorFromStops(kt, WIND_STOPS);
+function windColor(kmh) {
+  return colorFromStops(kmh, WIND_STOPS);
 }
 
-function gustColor(kt) {
-  return colorFromStops(kt, GUST_STOPS);
+function gustColor(kmh) {
+  return colorFromStops(kmh, GUST_STOPS);
 }
 
 function tempColor(c) {

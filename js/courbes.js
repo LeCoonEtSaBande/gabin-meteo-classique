@@ -40,8 +40,8 @@ const MODEL_COLORS = PALETTES.temp;
 const WX_CLOUD = "#6e6e6e";
 const WX_PRECIP = "#3a8fd0";
 const SUN_FILL = "#ffcc33";
-const KT8 = 8;
-const KT25 = 25;
+const REF_KMH = 15;
+const SCALE_MIN_KMH = 50;
 const MEAN_STROKE = 1.94;
 const GUST_STROKE = 1.13;
 
@@ -108,8 +108,8 @@ function indexCurves(rows) {
     const set = row.curve_set;
     const spot = row.spot_key;
     if (!out[set] || !spot) continue;
-    const mean = Number(row.wind_speed_10m_kn);
-    const gust = Number(row.wind_gusts_10m_kn);
+    const mean = Number(row.wind_speed_10m_kmh);
+    const gust = Number(row.wind_gusts_10m_kmh);
     const dir = Number(row.wind_direction_10m_deg);
     const precip = Number(row.precipitation_mm);
     const cloud = Number(row.cloud_cover_max_pct);
@@ -182,9 +182,9 @@ function rangeFill(points, startDay, nDays, x0, innerW, yKt, color) {
   return `<polygon points="${top.concat(bottom).join(" ")}" fill="${color}" fill-opacity="0.18"></polygon>`;
 }
 
-function niceMaxKt(values) {
-  const peak = Math.max(KT25 + 2, ...values, 0);
-  return Math.ceil(peak / 5) * 5;
+function niceMaxKmh(values) {
+  const peak = Math.max(SCALE_MIN_KMH + 2, ...values, 0);
+  return Math.ceil(peak / 10) * 10;
 }
 
 function nicePrecipMax(values) {
@@ -536,20 +536,20 @@ function buildWindChart(points, startDay, nDays, width = 400) {
   const dirH = 22;
   const L = layout(width, 132, { padL: 44, padR: 18, dirH });
   const ticks = xTicks(startDay, nDays, L.x0, L.innerW);
-  const maxKt = niceMaxKt(points.flatMap((p) => [p.mean, p.gust]));
-  const yKt = (kt) => L.plotBottom - (kt / maxKt) * L.plotH;
+  const maxKmh = niceMaxKmh(points.flatMap((p) => [p.mean, p.gust]));
+  const yKmh = (kmh) => L.plotBottom - (kmh / maxKmh) * L.plotH;
   const gridValues = [];
-  for (let kt = 0; kt <= maxKt; kt += 5) gridValues.push(kt);
+  for (let kmh = 0; kmh <= maxKmh; kmh += 10) gridValues.push(kmh);
   const grid = gridValues
-    .map((kt) => {
-      const y = yKt(kt);
+    .map((kmh) => {
+      const y = yKmh(kmh);
       return `<line class="kt-grid" x1="${L.x0}" y1="${y.toFixed(1)}" x2="${L.x1}" y2="${y.toFixed(1)}" stroke="#2a2a2a" stroke-width="0.45"></line>
-        <text x="${L.x0 - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="#7a7a7a" font-size="8px">${kt}</text>`;
+        <text x="${L.x0 - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="#7a7a7a" font-size="8px">${kmh}</text>`;
     })
     .join("");
-  const y8 = yKt(KT8);
-  const kt8Line = `<line class="kt-8" x1="${L.x0}" y1="${y8.toFixed(1)}" x2="${L.x1}" y2="${y8.toFixed(1)}" stroke="#6a6a6a" stroke-dasharray="2 3" stroke-width="0.7"></line>
-    <text x="${L.x0 - 6}" y="${(y8 + 3).toFixed(1)}" text-anchor="end" fill="#8a8a8a" font-size="8px">8</text>`;
+  const yRef = yKmh(REF_KMH);
+  const refLine = `<line class="kmh-ref" x1="${L.x0}" y1="${yRef.toFixed(1)}" x2="${L.x1}" y2="${yRef.toFixed(1)}" stroke="#6a6a6a" stroke-dasharray="2 3" stroke-width="0.7"></line>
+    <text x="${L.x0 - 6}" y="${(yRef + 3).toFixed(1)}" text-anchor="end" fill="#8a8a8a" font-size="8px">${REF_KMH}</text>`;
   const step = arrowStep(nDays);
   const arrows = subsample(points, step)
     .map((point) => {
@@ -567,7 +567,7 @@ function buildWindChart(points, startDay, nDays, width = 400) {
     innerW: L.innerW,
     plotTop: L.plotTop,
     plotBottom: L.plotBottom,
-    maxKt,
+    maxKmh,
     startDay,
     nDays,
     width,
@@ -577,11 +577,11 @@ function buildWindChart(points, startDay, nDays, width = 400) {
     <rect x="0" y="0" width="${width}" height="${L.height}" fill="transparent"></rect>
     ${arrows}
     ${grid}
-    ${kt8Line}
-    <text x="${L.x0 - 6}" y="${L.plotTop + 8}" text-anchor="end" fill="#7a7a7a" font-size="8px">nds</text>
-    ${rangeFill(points, startDay, nDays, L.x0, L.innerW, yKt, "#8a8a8a")}
-    ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKt(p.gust), true, "wind")}
-    ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKt(p.mean), false, "wind")}
+    ${refLine}
+    <text x="${L.x0 - 6}" y="${L.plotTop + 8}" text-anchor="end" fill="#7a7a7a" font-size="8px">km/h</text>
+    ${rangeFill(points, startDay, nDays, L.x0, L.innerW, yKmh, "#8a8a8a")}
+    ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKmh(p.gust), true, "wind")}
+    ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKmh(p.mean), false, "wind")}
     ${hourAxisMarkup(startDay, nDays, L.x0, L.x1, L.innerW, L.axisY, L.plotTop, L.plotBottom, ticks, L.height)}
   </svg>`;
 }
@@ -658,8 +658,9 @@ if (typeof module !== "undefined" && module.exports) {
     buildDewChart,
     buildPressureChart,
     legendHtml,
-    niceMaxKt,
-    KT25,
+    niceMaxKmh,
+    SCALE_MIN_KMH,
+    REF_KMH,
     MEAN_STROKE,
     GUST_STROKE,
     SUN_FILL,

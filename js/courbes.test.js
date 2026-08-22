@@ -93,8 +93,8 @@ test("indexCurves lit AROMEIFS avec rosée et pression", () => {
       curve_set: "AROMEIFS",
       valid_at: "2026-08-20T00:00",
       source_model: "AROMEHD",
-      wind_speed_10m_kn: "9.2",
-      wind_gusts_10m_kn: "14",
+      wind_speed_10m_kmh: "9.2",
+      wind_gusts_10m_kmh: "14",
       wind_direction_10m_deg: "20",
       precipitation_mm: "0",
       cloud_cover_max_pct: "10",
@@ -147,7 +147,8 @@ test("pluie en mm, température, rosée, pression et vent", () => {
   assert.match(buildChartSvg("pressure", SAMPLE, "2026-08-20", 1, 400), /hPa/);
   const wind = buildChartSvg("wind", SAMPLE, "2026-08-20", 1, 400);
   assert.doesNotMatch(wind, /AROMEIFS/);
-  assert.match(wind, /class="kt-8"/);
+  assert.match(wind, /class="kmh-ref"/);
+  assert.match(wind, /km\/h/);
   assert.match(wind, new RegExp(`stroke-width="${MEAN_STROKE}"`));
   assert.match(wind, /rotate\(220\)/);
 });
