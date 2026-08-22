@@ -143,13 +143,21 @@ test("nébulosité : fond soleil, échelles nuages et soleil inversée, 75 % sol
 
 test("pluie en mm, température, rosée, pression et vent", () => {
   assert.match(buildChartSvg("precip", SAMPLE, "2026-08-20", 1, 400), /Pluie \(mm\)/);
-  assert.match(buildChartSvg("temp", SAMPLE, "2026-08-20", 1, 400), /°C/);
-  assert.match(buildChartSvg("dew", SAMPLE, "2026-08-20", 1, 400), /°C/);
-  assert.match(buildChartSvg("pressure", SAMPLE, "2026-08-20", 1, 400), /hPa/);
+  const temp = buildChartSvg("temp", SAMPLE, "2026-08-20", 1, 400);
+  const dew = buildChartSvg("dew", SAMPLE, "2026-08-20", 1, 400);
+  const pressure = buildChartSvg("pressure", SAMPLE, "2026-08-20", 1, 400);
   const wind = buildChartSvg("wind", SAMPLE, "2026-08-20", 1, 400);
+  assert.match(temp, /class="wx-unit"/);
+  assert.match(temp, /rotate\(-90\)/);
+  assert.match(temp, /°C/);
+  assert.match(dew, /class="wx-unit"/);
+  assert.match(dew, /°C/);
+  assert.match(pressure, /class="wx-unit"/);
+  assert.match(pressure, /hPa/);
+  assert.match(wind, /class="wx-unit"/);
+  assert.match(wind, /km\/h/);
   assert.doesNotMatch(wind, /AROMEIFS/);
   assert.doesNotMatch(wind, /class="kmh-ref"/);
-  assert.match(wind, /km\/h/);
   assert.match(wind, new RegExp(`stroke-width="${MEAN_STROKE}"`));
   assert.match(wind, /rotate\(220\)/);
 });

@@ -471,7 +471,7 @@ function buildLineChart(points, startDay, nDays, width, options) {
         <text x="${L.x0 - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="#7a7a7a" font-size="8px">${label}</text>`;
     })
     .join("");
-  const unitY = L.plotTop + 8;
+  const midY = (L.plotTop + L.plotBottom) / 2;
   const geom = {
     kind: "line",
     key,
@@ -489,7 +489,7 @@ function buildLineChart(points, startDay, nDays, width, options) {
   return `<svg class="spot-svg" viewBox="0 0 ${width} ${L.height}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${escapeHtml(options.label)}" data-geom="${escapeHtml(JSON.stringify(geom))}">
     <rect x="0" y="0" width="${width}" height="${L.height}" fill="transparent"></rect>
     ${grid}
-    <text x="${L.x0 - 6}" y="${unitY}" text-anchor="end" fill="#7a7a7a" font-size="8px">${escapeHtml(options.unit)}</text>
+    <text class="wx-unit" transform="translate(11 ${midY.toFixed(1)}) rotate(-90)" text-anchor="middle" fill="#7a7a7a" font-size="6.5px">${escapeHtml(options.unit)}</text>
     ${paintModelLine(usable, startDay, nDays, L.x0, L.innerW, yOf, false, options.palette)}
     ${hourAxisMarkup(startDay, nDays, L.x0, L.x1, L.innerW, L.axisY, L.plotTop, L.plotBottom, ticks, L.height)}
   </svg>`;
@@ -575,7 +575,7 @@ function buildWindChart(points, startDay, nDays, width = 400) {
     <rect x="0" y="0" width="${width}" height="${L.height}" fill="transparent"></rect>
     ${arrows}
     ${grid}
-    <text x="${L.x0 - 6}" y="${L.plotTop + 8}" text-anchor="end" fill="#7a7a7a" font-size="8px">km/h</text>
+    <text class="wx-unit" transform="translate(11 ${((L.plotTop + L.plotBottom) / 2).toFixed(1)}) rotate(-90)" text-anchor="middle" fill="#7a7a7a" font-size="6.5px">km/h</text>
     ${rangeFill(points, startDay, nDays, L.x0, L.innerW, yKmh, "#8a8a8a")}
     ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKmh(p.gust), true, "wind")}
     ${paintModelLine(points, startDay, nDays, L.x0, L.innerW, (p) => yKmh(p.mean), false, "wind")}
