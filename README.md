@@ -1,8 +1,10 @@
 # Gabin-meteo classique
 
-Prévisions météo d’un spot unique (Ferme de Sauze) : collecte Open-Meteo, courbes AROMEIFS, panneau web.
+Prévisions météo (Sauze, Lyon, Hyères, Méribel) : collecte Open-Meteo, courbes AROMEIFS, panneau web.
 
 Site public : [lecoonetsabande.github.io/gabin-meteo-classique](https://lecoonetsabande.github.io/gabin-meteo-classique/)
+
+Page multisite : [gabin-meteo-multisite.html](https://lecoonetsabande.github.io/gabin-meteo-classique/gabin-meteo-multisite.html)
 
 Dérivé de [gabin-meteo](https://github.com/LeCoonEtSaBande/gabin-meteo) (carte multi-spots). Ce dépôt ne le modifie pas.
 
@@ -13,7 +15,7 @@ Ce dépôt n’est **pas** un historique unique fusionné dans `main`. Chaque br
 | Branche | Contenu | README détaillé |
 | --- | --- | --- |
 | `main` | Workflows GitHub Actions (cron et enchaînement). Pas de données métier. | ce fichier |
-| `collecte-api-meteo` | Script Python, CSV bruts Open-Meteo, **specs parentes** du spot | [README](https://github.com/LeCoonEtSaBande/gabin-meteo-classique/blob/collecte-api-meteo/README.md) |
+| `collecte-api-meteo` | Script Python, CSV bruts Open-Meteo, **specs parentes** des spots | [README](https://github.com/LeCoonEtSaBande/gabin-meteo-classique/blob/collecte-api-meteo/README.md) |
 | `traitement-donnees` | Courbe splicée et JSON quotidien (**parent** de `data/processed`) | [README](https://github.com/LeCoonEtSaBande/gabin-meteo-classique/blob/traitement-donnees/README.md) |
 | `affichage-web` | Site GitHub Pages (copies publiées + front) | [README](https://github.com/LeCoonEtSaBande/gabin-meteo-classique/blob/affichage-web/README.md) |
 
@@ -52,11 +54,12 @@ Déclenchement manuel : Actions → *Collecte Open-Meteo* (`force` ignore le fil
 
 ## Données
 
-- **1 spot** : Ferme de Sauze.
-- **3 modèles** Open-Meteo : AROMEHD, ARPEGE, IFS.
+- **4 spots** : Ferme de Sauze, Lyon, Hyères, Méribel.
+- **3 modèles** Open-Meteo pour la courbe : AROMEHD, ARPEGE, IFS. Grilles les plus proches renseignées dans le CSV parent.
 - **Une seule courbe** `AROMEIFS` : AROMEHD → ARPEGE → IFS (chaque modèle jusqu’à son horizon).
-- Variables : nébulosité, précipitation, température 2 m, vent / rafales / direction (km/h), point de rosée 2 m, pression de surface.
-- Pression absente d’AROME HD : repli **ARPEGE puis IFS** sur les créneaux AROME.
+- Variables : nébulosité, précipitation, chutes de neige, température 2 m, vent / rafales / direction (km/h), point de rosée 2 m, pression de surface, isotherme 0 °C.
+- Pression et neige absentes d’AROME HD : repli **ARPEGE puis IFS** sur les créneaux AROME.
+- Isotherme 0 °C : absente d’AROME / ARPEGE / IFS ; collectée via **ICON** et alignée sur les échéances.
 
 | Jeu | Enchaînement court → long terme | Usage |
 | --- | --- | --- |
@@ -64,9 +67,9 @@ Déclenchement manuel : Actions → *Collecte Open-Meteo* (`force` ignore le fil
 
 ## Site
 
-- Deux boutons : **Prévisions** (panneau détails) et **Balise** (bientôt disponible).
+- Page Sauze : boutons **Prévisions** / **Balise**. Graphiques : pluie, nébulosité, température, vent, rosée, pression.
+- Page **gabin-meteo-multisite** : boutons Lyon / Hyères / Méribel. Sans rosée ni pression. Méribel ajoute neige et isotherme 0 °C.
 - Pas de carte SVG. Vues PC et iPhone, barre de jour, horizons 1 / 3 / 5 jours.
-- Graphiques, dans l’ordre : pluie, nébulosité (fond soleil), température, vent et rafales, point de rosée, pression.
 - Clic = zoom plein écran ; survol = infobulle détaillée.
 
 ## Lancer en local
