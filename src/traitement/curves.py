@@ -15,8 +15,8 @@ from io_raw import load_forecasts_csv
 class HourPoint:
     valid_at: datetime
     source_model: str
-    wind_speed_kt: float
-    wind_gusts_kt: float
+    wind_speed_kmh: float
+    wind_gusts_kmh: float
     wind_dir_deg: float
     temperature_c: float
     precipitation_mm: float
@@ -57,9 +57,9 @@ def _as_optional_float(raw: str | None) -> float | None:
     return float(text)
 
 
-def _wind_knots(row: dict[str, str], mean: bool) -> float:
-    """Lit le vent déjà en nœuds (colonnes _kn)."""
-    key = "wind_speed_10m_kn" if mean else "wind_gusts_10m_kn"
+def _wind_kmh(row: dict[str, str], mean: bool) -> float:
+    """Lit le vent déjà en km/h (colonnes _kmh)."""
+    key = "wind_speed_10m_kmh" if mean else "wind_gusts_10m_kmh"
     return _as_float(row.get(key))
 
 
@@ -81,8 +81,8 @@ def load_raw_points() -> dict[tuple[str, str], list[HourPoint]]:
         point = HourPoint(
             valid_at=valid_at,
             source_model=model,
-            wind_speed_kt=_wind_knots(row, mean=True),
-            wind_gusts_kt=_wind_knots(row, mean=False),
+            wind_speed_kmh=_wind_kmh(row, mean=True),
+            wind_gusts_kmh=_wind_kmh(row, mean=False),
             wind_dir_deg=_as_float(row.get("wind_direction_10m_deg")),
             temperature_c=_as_float(row.get("temperature_2m_c")),
             precipitation_mm=_as_float(row.get("precipitation_mm")),
@@ -139,8 +139,8 @@ def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ..
                 HourPoint(
                     valid_at=point.valid_at,
                     source_model=model,
-                    wind_speed_kt=point.wind_speed_kt,
-                    wind_gusts_kt=point.wind_gusts_kt,
+                    wind_speed_kmh=point.wind_speed_kmh,
+                    wind_gusts_kmh=point.wind_gusts_kmh,
                     wind_dir_deg=point.wind_dir_deg,
                     temperature_c=point.temperature_c,
                     precipitation_mm=point.precipitation_mm,

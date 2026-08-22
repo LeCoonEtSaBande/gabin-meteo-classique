@@ -11,8 +11,8 @@ def _pt(hour: int, model: str, pressure: float | None) -> HourPoint:
     return HourPoint(
         valid_at=datetime(2026, 8, 21, hour),
         source_model=model,
-        wind_speed_kt=10.0,
-        wind_gusts_kt=14.0,
+        wind_speed_kmh=10.0,
+        wind_gusts_kmh=14.0,
         wind_dir_deg=180.0,
         temperature_c=18.0,
         precipitation_mm=0.0,

@@ -6,12 +6,12 @@ import math
 from typing import Any, Sequence
 
 from config import (
-    GUST_SLOT_KT,
+    GUST_SLOT_KMH,
     MIN_SLOT_HOURS,
     SLOT_WINDOW_END_H,
     SLOT_WINDOW_START_H,
     TEMP_HOUR,
-    WIND_SLOT_KT,
+    WIND_SLOT_KMH,
 )
 from curves import HourPoint
 
@@ -153,13 +153,13 @@ def choose_usable_slot(
     gusts: Sequence[float],
     peak_hour: float,
 ) -> tuple[int, int] | None:
-    """Créneau exploitable ≥ 3 h, d'abord au vent moyen > 8 nds, sinon rafales > 15 nds."""
+    """Créneau exploitable ≥ 3 h, d'abord au vent moyen > 15 km/h, sinon rafales > 28 km/h."""
     win_hours, win_means, win_gusts = filter_day_window(hours, means, gusts)
-    mean_slots = long_enough_slots(win_hours, win_means, WIND_SLOT_KT)
+    mean_slots = long_enough_slots(win_hours, win_means, WIND_SLOT_KMH)
     chosen = pick_closest_slot(mean_slots, peak_hour)
     if chosen is not None:
         return chosen
-    gust_slots = long_enough_slots(win_hours, win_gusts, GUST_SLOT_KT)
+    gust_slots = long_enough_slots(win_hours, win_gusts, GUST_SLOT_KMH)
     return pick_closest_slot(gust_slots, peak_hour)
 
 
@@ -193,16 +193,16 @@ def summarize_day(points: list[HourPoint]) -> dict[str, Any] | None:
         return None
     points = sorted(points, key=lambda point: point.hour_of_day)
     hours = [point.hour_of_day for point in points]
-    means = [point.wind_speed_kt for point in points]
-    gusts = [point.wind_gusts_kt for point in points]
+    means = [point.wind_speed_kmh for point in points]
+    gusts = [point.wind_gusts_kmh for point in points]
     imax = max(range(len(means)), key=lambda i: (means[i], -hours[i]))
     peak = points[imax]
     slot = choose_usable_slot(hours, means, gusts, hours[imax])
     temp_15 = interpolate_at(hours, [point.temperature_c for point in points], float(TEMP_HOUR))
     icon, cloud, precip = weather_icon_around_max(points, imax)
     return {
-        "mean_max_kt": int(round(peak.wind_speed_kt)),
-        "gust_at_mean_max_kt": int(round(peak.wind_gusts_kt)),
+        "mean_max_kmh": int(round(peak.wind_speed_kmh)),
+        "gust_at_mean_max_kmh": int(round(peak.wind_gusts_kmh)),
         "wind_dir_deg": round(peak.wind_dir_deg, 1),
         "temp_15h_c": None if temp_15 is None else int(round(temp_15)),
         "slot_start_h": None if slot is None else slot[0],
@@ -213,8 +213,8 @@ def summarize_day(points: list[HourPoint]) -> dict[str, Any] | None:
         "source_model_at_max": peak.source_model,
         "cloud_cover_pct": round(cloud, 1),
         "precip_mm": round(precip, 2),
-        "mean_max_kt_raw": round(peak.wind_speed_kt, 2),
-        "gust_at_mean_max_kt_raw": round(peak.wind_gusts_kt, 2),
+        "mean_max_kmh_raw": round(peak.wind_speed_kmh, 2),
+        "gust_at_mean_max_kmh_raw": round(peak.wind_gusts_kmh, 2),
     }
 
 

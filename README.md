@@ -23,7 +23,7 @@ Le workflow *Traitement et affichage* (sur `main`), après une collecte réussie
 | --- | --- | --- |
 | `AROMEIFS` | AROMEHD → ARPEGE → IFS | graphique unique du panneau détails |
 
-Vent / rafales déjà en **nœuds**. Créneau quotidien : vent moyen **> 8 nds**.
+Vent / rafales déjà en **km/h**. Créneau quotidien : vent moyen **> 15 km/h**.
 
 Pression de surface : si AROME HD n’en a pas, repli **ARPEGE puis IFS** à la même échéance.
 

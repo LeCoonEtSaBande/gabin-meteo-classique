@@ -14,8 +14,8 @@ QUOTIDIEN_JSON = PROCESSED_DIR / "quotidien.json"
 LAST_UPDATE_JSON = PROCESSED_DIR / "last_update.json"
 COLLECTE_BRANCH = "collecte-api-meteo"
 
-WIND_SLOT_KT = 8.0
-GUST_SLOT_KT = 15.0
+WIND_SLOT_KMH = 15.0
+GUST_SLOT_KMH = 28.0
 SLOT_WINDOW_START_H = 7
 SLOT_WINDOW_END_H = 22
 MIN_SLOT_HOURS = 3
@@ -35,8 +35,8 @@ CURVE_COLUMNS = (
     "curve_set",
     "valid_at",
     "source_model",
-    "wind_speed_10m_kn",
-    "wind_gusts_10m_kn",
+    "wind_speed_10m_kmh",
+    "wind_gusts_10m_kmh",
     "wind_direction_10m_deg",
     "temperature_2m_c",
     "precipitation_mm",

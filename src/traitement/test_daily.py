@@ -35,16 +35,16 @@ def test_slot_nearest_hour() -> None:
 
 def test_slot_ignores_before_7_and_after_22() -> None:
     hours = [3.0, 6.0, 9.0, 12.0, 15.0, 23.0]
-    means = [20.0, 20.0, 15.0, 15.0, 15.0, 25.0]
-    gusts = [25.0, 25.0, 18.0, 18.0, 18.0, 30.0]
+    means = [37.0, 37.0, 28.0, 28.0, 28.0, 46.0]
+    gusts = [46.0, 46.0, 33.0, 33.0, 33.0, 56.0]
     slot = choose_usable_slot(hours, means, gusts, peak_hour=23.0)
     assert slot == (9, 15), slot
 
 
 def test_slot_picks_closest_to_mean_max() -> None:
     hours = list(range(8, 21))
-    means = [12.0, 12.0, 12.0, 4.0, 4.0, 4.0, 4.0, 4.0, 14.0, 14.0, 14.0, 14.0, 4.0]
-    gusts = [10.0] * len(hours)
+    means = [22.0, 22.0, 22.0, 8.0, 8.0, 8.0, 8.0, 8.0, 26.0, 26.0, 26.0, 26.0, 8.0]
+    gusts = [18.0] * len(hours)
     # Deux créneaux moyen : 8–11 et 15–20 (interpolation). Pic à 18 h → le second.
     assert choose_usable_slot(hours, means, gusts, peak_hour=18.0) == (15, 20)
     assert choose_usable_slot(hours, means, gusts, peak_hour=9.0) == (8, 11)
@@ -52,8 +52,8 @@ def test_slot_picks_closest_to_mean_max() -> None:
 
 def test_slot_fallback_gusts_when_mean_too_short() -> None:
     hours = list(range(8, 20))
-    means = [9.0, 9.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0]
-    gusts = [16.0] * 8 + [10.0] * 4
+    means = [16.0, 16.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0]
+    gusts = [30.0] * 8 + [18.0] * 4
     # Moyen 8–10 trop court. Rafales interpolées 8 h–15 h.
     slot = choose_usable_slot(hours, means, gusts, peak_hour=9.0)
     assert slot == (8, 15), slot
@@ -83,8 +83,8 @@ def test_summarize_day_empties_short_slot() -> None:
         HourPoint(
             valid_at=datetime(2026, 8, 21, hour),
             source_model="ICONCH1",
-            wind_speed_kt=4.0 if hour != 21 else 12.0,
-            wind_gusts_kt=6.0 if hour != 21 else 16.0,
+            wind_speed_kmh=4.0 if hour != 21 else 12.0,
+            wind_gusts_kmh=6.0 if hour != 21 else 16.0,
             wind_dir_deg=20.0,
             temperature_c=20.0,
             precipitation_mm=0.0,
@@ -96,7 +96,7 @@ def test_summarize_day_empties_short_slot() -> None:
     ]
     summary = summarize_day(points)
     assert summary is not None
-    assert summary["mean_max_kt"] == 12
+    assert summary["mean_max_kmh"] == 12
     assert summary["slot_start_h"] is None
     assert summary["slot_end_h"] is None
     assert summary["slot_label"] == ""
