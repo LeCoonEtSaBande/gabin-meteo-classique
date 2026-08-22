@@ -27,8 +27,9 @@ CURVE_SETS: dict[str, tuple[str, ...]] = {
     "AROMEIFS": ("AROMEHD", "ARPEGE", "IFS"),
 }
 
-# Pression AROME souvent absente : on complète dans cet ordre.
+# Pression et neige AROME souvent absentes : on complète dans cet ordre.
 PRESSURE_FALLBACK_MODELS = ("ARPEGE", "IFS")
+SNOW_FALLBACK_MODELS = ("ARPEGE", "IFS")
 
 CURVE_COLUMNS = (
     "spot_key",
@@ -44,6 +45,10 @@ CURVE_COLUMNS = (
     "dew_point_2m_c",
     "surface_pressure_hpa",
     "pressure_source_model",
+    "snowfall_cm",
+    "snow_source_model",
+    "freezing_level_height_m",
+    "freeze_source_model",
 )
 
 

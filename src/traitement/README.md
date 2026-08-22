@@ -12,7 +12,9 @@ Assemble les prévisions brutes de `collecte-api-meteo` en courbe splicée AROME
 
 Vent moyen et rafales sont déjà en **km/h** dans les bruts (`wind_speed_10m_kmh`, `wind_gusts_10m_kmh`) : pas de conversion.
 
-Pression de surface : AROME HD ne la fournit généralement pas. Pour chaque échéance AROME sans valeur, on prend d’abord ARPEGE, sinon IFS, à la **même heure**. Le modèle réellement utilisé est stocké dans `pressure_source_model`.
+Pression de surface et chutes de neige : AROME HD ne les fournit généralement pas. Pour chaque échéance AROME sans valeur, on prend d’abord ARPEGE, sinon IFS, à la **même heure**. Les modèles réellement utilisés sont `pressure_source_model` et `snow_source_model`.
+
+Isotherme 0 °C : absente d’AROME / ARPEGE / IFS. La collecte la lit via ICON et l’aligne sur les échéances ; `freeze_source_model` vaut `ICON`.
 
 Créneau exploitable (écrit dans `quotidien.json`) :
 

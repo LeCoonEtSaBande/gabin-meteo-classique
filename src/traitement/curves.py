@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from io import StringIO
 
-from config import CURVE_SETS, PRESSURE_FALLBACK_MODELS
+from config import CURVE_SETS, PRESSURE_FALLBACK_MODELS, SNOW_FALLBACK_MODELS
 from io_raw import load_forecasts_csv
 
 
@@ -24,6 +24,10 @@ class HourPoint:
     dew_point_c: float
     surface_pressure_hpa: float | None
     pressure_source_model: str = ""
+    snowfall_cm: float | None = None
+    snow_source_model: str = ""
+    freezing_level_m: float | None = None
+    freeze_source_model: str = ""
 
     @property
     def hour_of_day(self) -> float:
@@ -78,6 +82,8 @@ def load_raw_points() -> dict[tuple[str, str], list[HourPoint]]:
         except ValueError:
             continue
         pressure = _as_optional_float(row.get("surface_pressure_hpa"))
+        snow = _as_optional_float(row.get("snowfall_cm"))
+        freeze = _as_optional_float(row.get("freezing_level_height_m"))
         point = HourPoint(
             valid_at=valid_at,
             source_model=model,
@@ -90,6 +96,11 @@ def load_raw_points() -> dict[tuple[str, str], list[HourPoint]]:
             dew_point_c=_as_float(row.get("dew_point_2m_c")),
             surface_pressure_hpa=pressure,
             pressure_source_model=model if pressure is not None else "",
+            snowfall_cm=snow,
+            snow_source_model=model if snow is not None else "",
+            freezing_level_m=freeze,
+            freeze_source_model=(row.get("freeze_source_model") or "").strip()
+            or (model if freeze is not None else ""),
         )
         grouped.setdefault((spot, model), []).append(point)
 
@@ -98,33 +109,62 @@ def load_raw_points() -> dict[tuple[str, str], list[HourPoint]]:
     return grouped
 
 
-def _pressure_lookup(model_points: dict[str, list[HourPoint]]) -> dict[tuple[str, datetime], tuple[float, str]]:
-    """(modèle, échéance) → (pression, modèle source) pour le repli AROME."""
+def _optional_lookup(
+    model_points: dict[str, list[HourPoint]],
+    models: tuple[str, ...],
+    attr: str,
+    source_attr: str,
+) -> dict[tuple[str, datetime], tuple[float, str]]:
     index: dict[tuple[str, datetime], tuple[float, str]] = {}
-    for model in PRESSURE_FALLBACK_MODELS:
+    for model in models:
         for point in model_points.get(model) or []:
-            if point.surface_pressure_hpa is None:
+            value = getattr(point, attr)
+            if value is None:
                 continue
-            index[(model, point.valid_at)] = (point.surface_pressure_hpa, model)
+            source = getattr(point, source_attr) or model
+            index[(model, point.valid_at)] = (value, source)
     return index
 
 
-def _fill_pressure(
+def _fill_optional(
     point: HourPoint,
     lookup: dict[tuple[str, datetime], tuple[float, str]],
+    models: tuple[str, ...],
+    attr: str,
+    source_attr: str,
 ) -> tuple[float | None, str]:
-    if point.surface_pressure_hpa is not None:
-        return point.surface_pressure_hpa, point.pressure_source_model or point.source_model
-    for model in PRESSURE_FALLBACK_MODELS:
+    value = getattr(point, attr)
+    if value is not None:
+        return value, getattr(point, source_attr) or point.source_model
+    for model in models:
         hit = lookup.get((model, point.valid_at))
         if hit:
             return hit
     return None, ""
 
 
+def _pressure_lookup(model_points: dict[str, list[HourPoint]]) -> dict[tuple[str, datetime], tuple[float, str]]:
+    """(modèle, échéance) → (pression, modèle source) pour le repli AROME."""
+    return _optional_lookup(
+        model_points, PRESSURE_FALLBACK_MODELS, "surface_pressure_hpa", "pressure_source_model"
+    )
+
+
+def _fill_pressure(
+    point: HourPoint,
+    lookup: dict[tuple[str, datetime], tuple[float, str]],
+) -> tuple[float | None, str]:
+    return _fill_optional(
+        point, lookup, PRESSURE_FALLBACK_MODELS, "surface_pressure_hpa", "pressure_source_model"
+    )
+
+
 def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ...]) -> list[HourPoint]:
     """Garde le court terme jusqu'à son horizon, puis le modèle suivant, etc."""
-    lookup = _pressure_lookup(model_points)
+    pressure_lookup = _pressure_lookup(model_points)
+    snow_lookup = _optional_lookup(
+        model_points, SNOW_FALLBACK_MODELS, "snowfall_cm", "snow_source_model"
+    )
     curve: list[HourPoint] = []
     cutoff: datetime | None = None
     for model in models:
@@ -134,7 +174,10 @@ def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ..
         if not points:
             continue
         for point in points:
-            pressure, psrc = _fill_pressure(point, lookup)
+            pressure, psrc = _fill_pressure(point, pressure_lookup)
+            snow, ssrc = _fill_optional(
+                point, snow_lookup, SNOW_FALLBACK_MODELS, "snowfall_cm", "snow_source_model"
+            )
             curve.append(
                 HourPoint(
                     valid_at=point.valid_at,
@@ -148,6 +191,10 @@ def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ..
                     dew_point_c=point.dew_point_c,
                     surface_pressure_hpa=pressure,
                     pressure_source_model=psrc,
+                    snowfall_cm=snow,
+                    snow_source_model=ssrc,
+                    freezing_level_m=point.freezing_level_m,
+                    freeze_source_model=point.freeze_source_model,
                 )
             )
         cutoff = points[-1].valid_at

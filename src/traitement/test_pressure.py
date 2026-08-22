@@ -20,6 +20,10 @@ def _pt(hour: int, model: str, pressure: float | None) -> HourPoint:
         dew_point_c=12.0,
         surface_pressure_hpa=pressure,
         pressure_source_model=model if pressure is not None else "",
+        snowfall_cm=None,
+        snow_source_model="",
+        freezing_level_m=None,
+        freeze_source_model="",
     )
 
 
@@ -52,7 +56,52 @@ def test_pressure_fill_falls_back_to_ifs() -> None:
     assert curve[0].source_model == "AROMEHD"
 
 
+def test_snow_fill_arome_from_arpege() -> None:
+    arome = HourPoint(
+        valid_at=datetime(2026, 8, 21, 10),
+        source_model="AROMEHD",
+        wind_speed_kmh=10.0,
+        wind_gusts_kmh=14.0,
+        wind_dir_deg=180.0,
+        temperature_c=18.0,
+        precipitation_mm=0.0,
+        cloud_cover_pct=40.0,
+        dew_point_c=12.0,
+        surface_pressure_hpa=1010.0,
+        pressure_source_model="AROMEHD",
+        snowfall_cm=None,
+        freezing_level_m=2100.0,
+        freeze_source_model="ICON",
+    )
+    arpege = HourPoint(
+        valid_at=datetime(2026, 8, 21, 10),
+        source_model="ARPEGE",
+        wind_speed_kmh=10.0,
+        wind_gusts_kmh=14.0,
+        wind_dir_deg=180.0,
+        temperature_c=18.0,
+        precipitation_mm=0.0,
+        cloud_cover_pct=40.0,
+        dew_point_c=12.0,
+        surface_pressure_hpa=1010.0,
+        pressure_source_model="ARPEGE",
+        snowfall_cm=1.4,
+        snow_source_model="ARPEGE",
+        freezing_level_m=2100.0,
+        freeze_source_model="ICON",
+    )
+    curve = splice_curve(
+        {"AROMEHD": [arome], "ARPEGE": [arpege], "IFS": []},
+        ("AROMEHD", "ARPEGE", "IFS"),
+    )
+    assert curve[0].snowfall_cm == 1.4
+    assert curve[0].snow_source_model == "ARPEGE"
+    assert curve[0].freezing_level_m == 2100.0
+    assert curve[0].freeze_source_model == "ICON"
+
+
 if __name__ == "__main__":
     test_pressure_fill_arome_from_arpege()
     test_pressure_fill_falls_back_to_ifs()
+    test_snow_fill_arome_from_arpege()
     print("ok")

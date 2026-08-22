@@ -42,10 +42,10 @@ def configure_stdio() -> None:
         sys.stderr.reconfigure(encoding="utf-8")
 
 
-def _fmt_pressure(value: float | None) -> str:
+def _fmt_optional(value: float | None, digits: int) -> str:
     if value is None:
         return ""
-    return f"{value:.1f}"
+    return f"{value:.{digits}f}"
 
 
 def write_curve_csv(path: Path, curve_set: str, by_spot: dict[str, list[HourPoint]]) -> int:
@@ -69,8 +69,12 @@ def write_curve_csv(path: Path, curve_set: str, by_spot: dict[str, list[HourPoin
                         "precipitation_mm": f"{point.precipitation_mm:.2f}",
                         "cloud_cover_max_pct": f"{point.cloud_cover_pct:.1f}",
                         "dew_point_2m_c": f"{point.dew_point_c:.1f}",
-                        "surface_pressure_hpa": _fmt_pressure(point.surface_pressure_hpa),
+                        "surface_pressure_hpa": _fmt_optional(point.surface_pressure_hpa, 1),
                         "pressure_source_model": point.pressure_source_model,
+                        "snowfall_cm": _fmt_optional(point.snowfall_cm, 2),
+                        "snow_source_model": point.snow_source_model,
+                        "freezing_level_height_m": _fmt_optional(point.freezing_level_m, 0),
+                        "freeze_source_model": point.freeze_source_model,
                     }
                 )
                 rows += 1
