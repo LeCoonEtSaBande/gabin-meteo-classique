@@ -1,4 +1,4 @@
 run_id;fetched_at;spot_key;model_key;status;http_status;error_message;hours_written;nulls_replaced_by_zero;grid_latitude;grid_longitude;grid_elevation_m
-2026-08-21T20:00:00+02:00;2026-08-21T20:34:32+02:00;ferme_de_sauze;AROMEHD;ok;;;66;0;45.09;4.709999;467.0
-2026-08-21T20:00:00+02:00;2026-08-21T20:34:32+02:00;ferme_de_sauze;ARPEGE;ok;;;96;0;45.1;4.700001;444.0
-2026-08-21T20:00:00+02:00;2026-08-21T20:34:32+02:00;ferme_de_sauze;IFS;ok;;;240;0;45.09666;4.7589426;359.0
+2026-08-22T09:00:00+02:00;2026-08-22T09:13:52+02:00;ferme_de_sauze;AROMEHD;ok;;;57;0;45.09;4.709999;467.0
+2026-08-22T09:00:00+02:00;2026-08-22T09:13:52+02:00;ferme_de_sauze;ARPEGE;ok;;;96;0;45.1;4.700001;444.0
+2026-08-22T09:00:00+02:00;2026-08-22T09:13:52+02:00;ferme_de_sauze;IFS;ok;;;240;0;45.09666;4.7589426;359.0

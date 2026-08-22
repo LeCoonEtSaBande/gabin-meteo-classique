@@ -4,7 +4,7 @@ Branche `collecte-api-meteo` : récupération des prévisions brutes Open-Meteo 
 
 Vue d’ensemble du dépôt : [README de `main`](https://github.com/LeCoonEtSaBande/gabin-meteo-classique/blob/main/README.md).
 
-**1 spot** : Ferme de Sauze. Un run réussi déclenche ensuite le workflow *Traitement et affichage* sur `main` (courbe AROMEIFS + republication du site).
+**4 spots** : Ferme de Sauze, Lyon, Hyères, Méribel. Un run réussi déclenche ensuite le workflow *Traitement et affichage* sur `main` (courbe AROMEIFS + republication du site).
 
 ## Horaires
 
@@ -20,7 +20,7 @@ Le cron GitHub ne s’exécute que depuis la branche par défaut (`main`) : le w
 
 ## Sobriété API
 
-Une requête HTTP par modèle, pour toutes les cellules distinctes de ce modèle. Trois requêtes par run (AROMEHD, ARPEGE, IFS), pause d’une seconde entre modèles. Si un lot échoue, repli cellule par cellule **pour ce modèle seulement**.
+Une requête HTTP par modèle, pour toutes les cellules distinctes de ce modèle. Trois requêtes AROMEIFS par run (AROMEHD, ARPEGE, IFS), plus une requête ICON pour l’isotherme 0 °C (variable absente des trois modèles Météo-France / ECMWF). Pause d’une seconde entre appels. Si un lot échoue, repli cellule par cellule **pour ce modèle seulement**.
 
 ## Lancer en local
 
@@ -57,13 +57,15 @@ Pour affichage sur le site :
 
 Une ligne par `(spot, modèle, échéance)`, séparateur `;`.
 
-`run_id`, `fetched_at`, `spot_key`, `model_key`, `grid_latitude`, `grid_longitude`, `grid_elevation_m`, `valid_at`, `wind_speed_10m_kmh`, `wind_gusts_10m_kmh`, `wind_direction_10m_deg`, `temperature_2m_c`, `precipitation_mm`, `cloud_cover_max_pct`, `dew_point_2m_c`, `surface_pressure_hpa`
+`run_id`, `fetched_at`, `spot_key`, `model_key`, `grid_latitude`, `grid_longitude`, `grid_elevation_m`, `valid_at`, `wind_speed_10m_kmh`, `wind_gusts_10m_kmh`, `wind_direction_10m_deg`, `temperature_2m_c`, `precipitation_mm`, `cloud_cover_max_pct`, `dew_point_2m_c`, `surface_pressure_hpa`, `snowfall_cm`, `freezing_level_height_m`, `freeze_source_model`
 
 Vent moyen et rafales sont demandés à Open-Meteo en **km/h** (`wind_speed_unit=kmh`), pour tous les modèles.
 
 `cloud_cover_max_pct` est le maximum des couches de nébulosité renvoyées (dont le total s’il existe). Une valeur API `null` devient `0` ; l’extraction continue. Les échéances entièrement vides (fin d’horizon du modèle) sont omises.
 
-`surface_pressure_hpa` reste vide si le modèle ne la fournit pas (cas d’AROME HD). Le traitement la complète avec ARPEGE puis IFS.
+`surface_pressure_hpa` et `snowfall_cm` restent vides si le modèle ne les fournit pas (cas d’AROME HD). Le traitement complète avec ARPEGE puis IFS.
+
+`freezing_level_height_m` vient d’ICON (`icon_seamless`), recopiée sur les échéances AROMEIFS à la même heure. `freeze_source_model` vaut alors `ICON`.
 
 ### `run_status.csv`
 

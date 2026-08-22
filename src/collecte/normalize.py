@@ -19,6 +19,7 @@ CORE_OUTPUT = {
     "precipitation": "precipitation_mm",
     "dew_point_2m": "dew_point_2m_c",
     "surface_pressure": "surface_pressure_hpa",
+    "snowfall": "snowfall_cm",
 }
 
 
@@ -91,6 +92,8 @@ def parse_payload(
                     "grid_elevation_m": elevation,
                     "valid_at": stamp,
                     **values,
+                    "freezing_level_height_m": None,
+                    "freeze_source_model": "",
                 }
             )
 
@@ -135,6 +138,35 @@ def failed_status(
         elevation=None,
         http_status=http_status,
     )
+
+
+def parse_icon_freeze(
+    payload: dict[str, Any],
+    spots: list[Spot],
+) -> dict[tuple[str, str], float]:
+    """(spot_key, valid_at) → altitude isotherme 0 °C (m)."""
+    hourly = payload.get("hourly") or {}
+    times = hourly.get("time") or []
+    index: dict[tuple[str, str], float] = {}
+    for i, stamp in enumerate(times):
+        raw = _series_value(hourly, "freezing_level_height", i)
+        if raw is None:
+            continue
+        for spot in spots:
+            index[(spot.key, stamp)] = raw
+    return index
+
+
+def overlay_icon_freeze(
+    forecast_rows: list[dict[str, Any]],
+    freeze_by_spot_time: dict[tuple[str, str], float],
+) -> None:
+    for row in forecast_rows:
+        value = freeze_by_spot_time.get((row["spot_key"], row["valid_at"]))
+        if value is None:
+            continue
+        row["freezing_level_height_m"] = value
+        row["freeze_source_model"] = "ICON"
 
 
 def _filled(value: float | None) -> tuple[float, int]:

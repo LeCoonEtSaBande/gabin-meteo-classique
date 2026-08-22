@@ -72,6 +72,9 @@ def _get_json(url: str, params: dict[str, Any]) -> Any:
 def fetch_locations(
     model: ModelSpec,
     locations: list[tuple[float, float]],
+    *,
+    hourly: tuple[str, ...] | None = None,
+    extra_params: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Interroge Open-Meteo pour une liste de cellules d'un seul modèle."""
     if not locations:
@@ -79,14 +82,18 @@ def fetch_locations(
     params = {
         "latitude": ",".join(f"{lat:.5f}" for lat, _ in locations),
         "longitude": ",".join(f"{lon:.5f}" for _, lon in locations),
-        "models": model.openmeteo_name,
-        "hourly": ",".join(HOURLY_ALL),
+        "hourly": ",".join(hourly or HOURLY_ALL),
         "forecast_days": model.forecast_days,
         "cell_selection": "nearest",
         "elevation": ",".join(["nan"] * len(locations)),
         "wind_speed_unit": "kmh",
+        "snowfall_unit": "cm",
         "timezone": "Europe/Paris",
     }
+    if model.openmeteo_name:
+        params["models"] = model.openmeteo_name
+    if extra_params:
+        params.update(extra_params)
     payload = _get_json(model.endpoint, params)
     items = _as_payload_list(payload)
     if len(items) != len(locations):
@@ -97,6 +104,23 @@ def fetch_locations(
         if item.get("error"):
             raise OpenMeteoError(str(item.get("reason") or item))
     return items
+
+
+def fetch_icon_locations(
+    locations: list[tuple[float, float]],
+) -> list[dict[str, Any]]:
+    """Isotherme 0 °C via ICON (absente d'AROME HD, ARPEGE et IFS)."""
+    from config import ICON_ENDPOINT, ICON_FORECAST_DAYS, ICON_HOURLY, ICON_OPENMETEO_NAME
+
+    icon = ModelSpec(
+        key="ICON",
+        label="ICON",
+        endpoint=ICON_ENDPOINT,
+        openmeteo_name=ICON_OPENMETEO_NAME,
+        forecast_days=ICON_FORECAST_DAYS,
+        resolution="",
+    )
+    return fetch_locations(icon, locations, hourly=ICON_HOURLY)
 
 
 def fetch_locations_with_fallback(

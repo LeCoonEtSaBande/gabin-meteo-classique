@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from client import OpenMeteoError, fetch_locations_with_fallback
+from client import OpenMeteoError, fetch_icon_locations, fetch_locations_with_fallback
 from config import (
     COLLECT_HOURS,
     MODELS,
@@ -26,7 +26,7 @@ from config import (
     PARIS,
     ModelSpec,
 )
-from normalize import failed_status, parse_payload
+from normalize import failed_status, overlay_icon_freeze, parse_icon_freeze, parse_payload
 from spots import Spot, cell_key, load_spots
 from store import last_update_label, publish_failure, publish_success
 
@@ -122,6 +122,42 @@ def collect_model(
     return rows, statuses
 
 
+def collect_icon_freeze(spots: list[Spot]) -> dict[tuple[str, str], float]:
+    """Une requête ICON pour toutes les coordonnées spot distinctes."""
+    groups: dict[tuple[float, float], list[Spot]] = defaultdict(list)
+    skipped = 0
+    for spot in spots:
+        if spot.latitude is None or spot.longitude is None:
+            skipped += 1
+            continue
+        groups[cell_key(spot.latitude, spot.longitude)].append(spot)
+    if not groups:
+        print("ICON : aucun spot avec coordonnées, isotherme 0 °C vide")
+        return {}
+    locations = list(groups)
+    print(f"→ ICON (isotherme 0 °C, {len(locations)} cellule(s))")
+    time.sleep(PAUSE_BETWEEN_CALLS_S)
+    index: dict[tuple[str, str], float] = {}
+    try:
+        items = fetch_icon_locations(locations)
+        for location, payload in zip(locations, items):
+            index.update(parse_icon_freeze(payload, groups[location]))
+    except OpenMeteoError as batch_exc:
+        print(f"Lot ICON en échec ({batch_exc}) → repli cellule par cellule")
+        for i, location in enumerate(locations):
+            if i:
+                time.sleep(PAUSE_BETWEEN_CALLS_S)
+            try:
+                payload = fetch_icon_locations([location])[0]
+                index.update(parse_icon_freeze(payload, groups[location]))
+            except OpenMeteoError as exc:
+                keys = ", ".join(spot.key for spot in groups[location])
+                print(f"ÉCHEC ICON / {keys} : {exc}")
+    if skipped:
+        print(f"ICON : {skipped} spot(s) sans Latitude/Longitude")
+    return index
+
+
 def build_meta(
     run_id: str,
     fetched_at_iso: str,
@@ -207,7 +243,17 @@ def main() -> int:
         forecast_rows.extend(model_rows)
         status_rows.extend(model_status)
 
-    status_rows.sort(key=lambda row: (row["spot_key"], MODEL_ORDER.index(row["model_key"])))
+    freeze_index = collect_icon_freeze(spots)
+    overlay_icon_freeze(forecast_rows, freeze_index)
+    n_freeze = sum(1 for row in forecast_rows if row.get("freezing_level_height_m") is not None)
+    print(f"\nIsotherme 0 °C (ICON) : {n_freeze} échéance(s) renseignée(s)")
+
+    status_rows.sort(
+        key=lambda row: (
+            row["spot_key"],
+            MODEL_ORDER.index(row["model_key"]) if row["model_key"] in MODEL_ORDER else 99,
+        )
+    )
     meta = build_meta(run_id, fetched_at_iso, now, status_rows, forecast_rows)
     print_summary(status_rows)
 

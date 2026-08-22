@@ -32,6 +32,7 @@ HOURLY_CORE = (
     "precipitation",
     "dew_point_2m",
     "surface_pressure",
+    "snowfall",
 )
 HOURLY_CLOUD = (
     "cloud_cover",
@@ -41,8 +42,14 @@ HOURLY_CLOUD = (
 )
 HOURLY_ALL = HOURLY_CORE + HOURLY_CLOUD
 
-# La pression AROME HD est souvent absente : on conserve les nulls (pas 0 hPa).
-KEEP_NULL_COLUMNS = frozenset({"surface_pressure_hpa"})
+# Pression et neige AROME HD souvent absentes : on conserve les nulls (pas 0).
+KEEP_NULL_COLUMNS = frozenset({"surface_pressure_hpa", "snowfall_cm"})
+
+# Isotherme 0 °C : AROME / ARPEGE / IFS ne la fournissent pas. ICON (forecast).
+ICON_ENDPOINT = "https://api.open-meteo.com/v1/forecast"
+ICON_HOURLY = ("freezing_level_height",)
+ICON_FORECAST_DAYS = 10
+ICON_OPENMETEO_NAME = "icon_seamless"
 
 FORECAST_COLUMNS = (
     "run_id",
@@ -61,6 +68,9 @@ FORECAST_COLUMNS = (
     "cloud_cover_max_pct",
     "dew_point_2m_c",
     "surface_pressure_hpa",
+    "snowfall_cm",
+    "freezing_level_height_m",
+    "freeze_source_model",
 )
 
 STATUS_COLUMNS = (

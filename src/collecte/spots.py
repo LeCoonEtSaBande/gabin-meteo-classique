@@ -21,6 +21,8 @@ class Spot:
     display_name: str
     zone_key: str
     short_term_model: str
+    latitude: float | None
+    longitude: float | None
     gridpoints: dict[str, GridPoint]
 
 
@@ -59,6 +61,8 @@ def load_spots() -> list[Spot]:
                     display_name=(row.get("display_name") or "").strip() or key,
                     zone_key=(row.get("zone_key") or "").strip(),
                     short_term_model=(row.get("short_term_model") or "").strip(),
+                    latitude=_parse_float(row.get("Latitude_spot")),
+                    longitude=_parse_float(row.get("Longitude_spot")),
                     gridpoints=gridpoints,
                 )
             )
