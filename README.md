@@ -27,7 +27,7 @@ Vent / rafales déjà en **km/h**. Créneau quotidien : vent moyen **> 15 km/h**
 
 Pression de surface et chutes de neige : AROME HD ne les fournit généralement pas. Pour chaque échéance AROME sans valeur, on prend d’abord ARPEGE, sinon IFS, à la **même heure**. Les modèles réellement utilisés sont `pressure_source_model` et `snow_source_model`.
 
-Nébulosité perçue : `cloud_cover_display_pct` dans `AROMEIFS.csv` (total prioritaire, sinon max basse/moy/haute×0,25 ; repli ARPEGE/IFS si AROME n’a que des hauts). Courbes et icônes du site s’appuient sur ce champ, pas sur `cloud_cover_max_pct`.
+Nébulosité perçue : `cloud_cover_display_pct` dans `AROMEIFS.csv` (total prioritaire, sinon max basse/moy/haute×0,25 ; AROME « hauts seuls » → bas/moy à 0, sans repli ARPEGE). Courbes et icônes s’appuient sur ce champ.
 
 ## Lancer en local
 

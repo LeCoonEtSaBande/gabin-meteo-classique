@@ -27,10 +27,9 @@ CURVE_SETS: dict[str, tuple[str, ...]] = {
     "AROMEIFS": ("AROMEHD", "ARPEGE", "IFS"),
 }
 
-# Pression, neige et nébulosité AROME : repli dans cet ordre.
+# Pression et neige AROME souvent absentes : repli ARPEGE puis IFS.
 PRESSURE_FALLBACK_MODELS = ("ARPEGE", "IFS")
 SNOW_FALLBACK_MODELS = ("ARPEGE", "IFS")
-CLOUD_FALLBACK_MODELS = ("ARPEGE", "IFS")
 
 CURVE_COLUMNS = (
     "spot_key",

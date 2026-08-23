@@ -1,10 +1,10 @@
-"""Nébulosité display et repli AROME → ARPEGE."""
+"""Nébulosité display sans repli ARPEGE pour AROME hauts seuls."""
 
 from __future__ import annotations
 
 from datetime import datetime
 
-from cloud import cloud_cover_display, needs_cloud_fallback
+from cloud import cloud_cover_display, is_high_only_layers
 from curves import HourPoint, splice_curve
 
 
@@ -17,10 +17,10 @@ def test_cloud_cover_display_layers() -> None:
     assert cloud_cover_display(None, 0.0, 0.0, 63.0) == 15.75
 
 
-def test_needs_cloud_fallback() -> None:
-    assert needs_cloud_fallback(None, 0.0, 0.0, 63.0) is True
-    assert needs_cloud_fallback(19.0, 0.0, 0.0, 19.0) is False
-    assert needs_cloud_fallback(None, 30.0, 0.0, 90.0) is False
+def test_is_high_only_layers() -> None:
+    assert is_high_only_layers(None, 0.0, 0.0, 63.0) is True
+    assert is_high_only_layers(19.0, 0.0, 0.0, 19.0) is False
+    assert is_high_only_layers(None, 30.0, 0.0, 90.0) is False
 
 
 def _pt(
@@ -33,6 +33,8 @@ def _pt(
     high: float | None = None,
     display: float | None = None,
 ) -> HourPoint:
+    if model == "AROMEHD" and is_high_only_layers(total, low, mid, high):
+        low, mid = 0.0, 0.0
     disp = display if display is not None else cloud_cover_display(total, low, mid, high)
     return HourPoint(
         valid_at=datetime(2026, 8, 21, hour),
@@ -53,7 +55,7 @@ def _pt(
     )
 
 
-def test_cloud_fill_arome_from_arpege() -> None:
+def test_arome_high_only_keeps_arome_display() -> None:
     model_points = {
         "AROMEHD": [_pt(10, "AROMEHD", total=None, low=0.0, mid=0.0, high=80.0)],
         "ARPEGE": [_pt(10, "ARPEGE", total=35.0, low=0.0, mid=0.0, high=35.0)],
@@ -61,13 +63,13 @@ def test_cloud_fill_arome_from_arpege() -> None:
     }
     curve = splice_curve(model_points, ("AROMEHD", "ARPEGE", "IFS"))
     assert curve[0].source_model == "AROMEHD"
-    assert curve[0].cloud_cover_display_pct == 35.0
-    assert curve[0].cloud_cover_source_model == "ARPEGE"
+    assert curve[0].cloud_cover_display_pct == 20.0
+    assert curve[0].cloud_cover_source_model == "AROMEHD"
 
 
 if __name__ == "__main__":
     test_cloud_cover_display_total()
     test_cloud_cover_display_layers()
-    test_needs_cloud_fallback()
-    test_cloud_fill_arome_from_arpege()
+    test_is_high_only_layers()
+    test_arome_high_only_keeps_arome_display()
     print("ok")

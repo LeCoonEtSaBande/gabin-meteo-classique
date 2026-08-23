@@ -1,4 +1,4 @@
-"""Nébulosité perçue pour l'affichage (total prioritaire, repli bas/moy/haut)."""
+"""Nébulosité perçue pour l'affichage (total prioritaire, sinon bas/moy/haut)."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def cloud_cover_display(
     return max(low_v, mid_v, high_v * HIGH_LAYER_WEIGHT)
 
 
-def needs_cloud_fallback(
+def is_high_only_layers(
     total: float | None,
     low: float | None,
     mid: float | None,

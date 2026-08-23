@@ -12,9 +12,9 @@ Assemble les prévisions brutes de `collecte-api-meteo` en courbe splicée AROME
 
 Vent moyen et rafales sont déjà en **km/h** dans les bruts (`wind_speed_10m_kmh`, `wind_gusts_10m_kmh`) : pas de conversion.
 
-Pression de surface, chutes de neige et nébulosité perçue : AROME HD ne les fournit pas toujours. Pour chaque échéance AROME sans valeur (ou nébulosité « hauts seuls »), on prend d’abord ARPEGE, sinon IFS, à la **même heure**. Les modèles réellement utilisés sont `pressure_source_model`, `snow_source_model` et `cloud_cover_source_model`.
+Pression de surface et chutes de neige : AROME HD ne les fournit pas toujours. Pour chaque échéance AROME sans valeur, on prend d’abord ARPEGE, sinon IFS, à la **même heure**. Les modèles réellement utilisés sont `pressure_source_model` et `snow_source_model`.
 
-Nébulosité affichée (`cloud_cover_display_pct`) : total NEBUL si présent, sinon `max(basse, moyenne, haute × 0,25)` ; bruts sans couches → repli sur `cloud_cover_max_pct`.
+Nébulosité affichée (`cloud_cover_display_pct`) : total NEBUL si présent, sinon `max(basse, moyenne, haute × 0,25)`. Si AROME HD ne renvoie que des hauts, basse et moyenne valent **0** et on **garde AROME** (pas de repli ARPEGE/IFS). Bruts sans couches → repli sur `cloud_cover_max_pct`.
 
 Isotherme 0 °C : absente d’AROME / ARPEGE / IFS. La collecte la lit via ICON et l’aligne sur les échéances ; `freeze_source_model` vaut `ICON`.
 

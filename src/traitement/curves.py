@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from io import StringIO
 
-from cloud import cloud_cover_display, needs_cloud_fallback
-from config import CLOUD_FALLBACK_MODELS, CURVE_SETS, PRESSURE_FALLBACK_MODELS, SNOW_FALLBACK_MODELS
+from cloud import cloud_cover_display, is_high_only_layers
+from config import CURVE_SETS, PRESSURE_FALLBACK_MODELS, SNOW_FALLBACK_MODELS
 from io_raw import load_forecasts_csv
 
 
@@ -113,7 +113,11 @@ def load_raw_points() -> dict[tuple[str, str], list[HourPoint]]:
         freeze = _as_optional_float(row.get("freezing_level_height_m"))
         total, low, mid, high = _cloud_layers_from_row(row)
         if _has_cloud_layers(row):
-            display = cloud_cover_display(total, low, mid, high)
+            if model == "AROMEHD" and is_high_only_layers(total, low, mid, high):
+                low, mid = 0.0, 0.0
+                display = cloud_cover_display(None, low, mid, high)
+            else:
+                display = cloud_cover_display(total, low, mid, high)
         else:
             display = _as_float(row.get("cloud_cover_max_pct"))
         point = HourPoint(
@@ -196,44 +200,12 @@ def _fill_pressure(
     )
 
 
-def _cloud_lookup(
-    model_points: dict[str, list[HourPoint]],
-) -> dict[tuple[str, datetime], tuple[float, str]]:
-    """(modèle, échéance) → (display, modèle source) pour le repli nébulosité AROME."""
-    index: dict[tuple[str, datetime], tuple[float, str]] = {}
-    for model in CLOUD_FALLBACK_MODELS:
-        for point in model_points.get(model) or []:
-            source = point.cloud_cover_source_model or model
-            index[(model, point.valid_at)] = (point.cloud_cover_display_pct, source)
-    return index
-
-
-def _fill_cloud(
-    point: HourPoint,
-    lookup: dict[tuple[str, datetime], tuple[float, str]],
-) -> tuple[float, str]:
-    display = point.cloud_cover_display_pct
-    source = point.cloud_cover_source_model or point.source_model
-    if point.source_model == "AROMEHD" and needs_cloud_fallback(
-        point.cloud_cover_total_pct,
-        point.cloud_cover_low_pct,
-        point.cloud_cover_mid_pct,
-        point.cloud_cover_high_pct,
-    ):
-        for model in CLOUD_FALLBACK_MODELS:
-            hit = lookup.get((model, point.valid_at))
-            if hit:
-                return hit
-    return display, source
-
-
 def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ...]) -> list[HourPoint]:
     """Garde le court terme jusqu'à son horizon, puis le modèle suivant, etc."""
     pressure_lookup = _pressure_lookup(model_points)
     snow_lookup = _optional_lookup(
         model_points, SNOW_FALLBACK_MODELS, "snowfall_cm", "snow_source_model"
     )
-    cloud_lookup = _cloud_lookup(model_points)
     curve: list[HourPoint] = []
     cutoff: datetime | None = None
     for model in models:
@@ -247,7 +219,6 @@ def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ..
             snow, ssrc = _fill_optional(
                 point, snow_lookup, SNOW_FALLBACK_MODELS, "snowfall_cm", "snow_source_model"
             )
-            cloud, csrc = _fill_cloud(point, cloud_lookup)
             curve.append(
                 HourPoint(
                     valid_at=point.valid_at,
@@ -257,7 +228,7 @@ def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ..
                     wind_dir_deg=point.wind_dir_deg,
                     temperature_c=point.temperature_c,
                     precipitation_mm=point.precipitation_mm,
-                    cloud_cover_display_pct=cloud,
+                    cloud_cover_display_pct=point.cloud_cover_display_pct,
                     dew_point_c=point.dew_point_c,
                     surface_pressure_hpa=pressure,
                     pressure_source_model=psrc,
@@ -265,7 +236,7 @@ def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ..
                     snow_source_model=ssrc,
                     freezing_level_m=point.freezing_level_m,
                     freeze_source_model=point.freeze_source_model,
-                    cloud_cover_source_model=csrc,
+                    cloud_cover_source_model=point.cloud_cover_source_model or model,
                 )
             )
         cutoff = points[-1].valid_at
