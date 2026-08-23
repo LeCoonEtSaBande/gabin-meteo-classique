@@ -57,11 +57,11 @@ Pour affichage sur le site :
 
 Une ligne par `(spot, modèle, échéance)`, séparateur `;`.
 
-`run_id`, `fetched_at`, `spot_key`, `model_key`, `grid_latitude`, `grid_longitude`, `grid_elevation_m`, `valid_at`, `wind_speed_10m_kmh`, `wind_gusts_10m_kmh`, `wind_direction_10m_deg`, `temperature_2m_c`, `precipitation_mm`, `cloud_cover_max_pct`, `dew_point_2m_c`, `surface_pressure_hpa`, `snowfall_cm`, `freezing_level_height_m`, `freeze_source_model`
+`run_id`, `fetched_at`, `spot_key`, `model_key`, `grid_latitude`, `grid_longitude`, `grid_elevation_m`, `valid_at`, `wind_speed_10m_kmh`, `wind_gusts_10m_kmh`, `wind_direction_10m_deg`, `temperature_2m_c`, `precipitation_mm`, `cloud_cover_pct`, `cloud_cover_low_pct`, `cloud_cover_mid_pct`, `cloud_cover_high_pct`, `cloud_cover_max_pct`, `dew_point_2m_c`, `surface_pressure_hpa`, `snowfall_cm`, `freezing_level_height_m`, `freeze_source_model`
 
 Vent moyen et rafales sont demandés à Open-Meteo en **km/h** (`wind_speed_unit=kmh`), pour tous les modèles.
 
-`cloud_cover_max_pct` est le maximum des couches de nébulosité renvoyées (dont le total s’il existe). Une valeur API `null` devient `0` ; l’extraction continue. Les échéances entièrement vides (fin d’horizon du modèle) sont omises.
+Nébulosité : les quatre couches API (`cloud_cover`, `cloud_cover_low`, `cloud_cover_mid`, `cloud_cover_high`) sont archivées séparément ; une couche absente reste **vide** (pas 0). `cloud_cover_max_pct` est le maximum des quatre valeurs non nulles (0 si les quatre sont absentes). Le traitement calcule ensuite `cloud_cover_display_pct` pour l’affichage (total prioritaire, sinon `max(basse, moyenne, haute × 0,25)` avec repli ARPEGE / IFS). Les échéances entièrement vides (fin d’horizon du modèle) sont omises.
 
 `surface_pressure_hpa` et `snowfall_cm` restent vides si le modèle ne les fournit pas (cas d’AROME HD). Le traitement complète avec ARPEGE puis IFS.
 

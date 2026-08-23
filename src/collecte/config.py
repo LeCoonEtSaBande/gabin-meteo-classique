@@ -42,8 +42,17 @@ HOURLY_CLOUD = (
 )
 HOURLY_ALL = HOURLY_CORE + HOURLY_CLOUD
 
-# Pression et neige AROME HD souvent absentes : on conserve les nulls (pas 0).
-KEEP_NULL_COLUMNS = frozenset({"surface_pressure_hpa", "snowfall_cm"})
+# Pression, neige et couches de nébulosité : null conservé (pas 0).
+KEEP_NULL_COLUMNS = frozenset(
+    {
+        "surface_pressure_hpa",
+        "snowfall_cm",
+        "cloud_cover_pct",
+        "cloud_cover_low_pct",
+        "cloud_cover_mid_pct",
+        "cloud_cover_high_pct",
+    }
+)
 
 # Isotherme 0 °C : AROME / ARPEGE / IFS ne la fournissent pas. ICON (forecast).
 ICON_ENDPOINT = "https://api.open-meteo.com/v1/forecast"
@@ -65,6 +74,10 @@ FORECAST_COLUMNS = (
     "wind_direction_10m_deg",
     "temperature_2m_c",
     "precipitation_mm",
+    "cloud_cover_pct",
+    "cloud_cover_low_pct",
+    "cloud_cover_mid_pct",
+    "cloud_cover_high_pct",
     "cloud_cover_max_pct",
     "dew_point_2m_c",
     "surface_pressure_hpa",
