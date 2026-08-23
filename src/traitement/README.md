@@ -12,7 +12,9 @@ Assemble les prévisions brutes de `collecte-api-meteo` en courbe splicée AROME
 
 Vent moyen et rafales sont déjà en **km/h** dans les bruts (`wind_speed_10m_kmh`, `wind_gusts_10m_kmh`) : pas de conversion.
 
-Pression de surface et chutes de neige : AROME HD ne les fournit généralement pas. Pour chaque échéance AROME sans valeur, on prend d’abord ARPEGE, sinon IFS, à la **même heure**. Les modèles réellement utilisés sont `pressure_source_model` et `snow_source_model`.
+Pression de surface, chutes de neige et nébulosité perçue : AROME HD ne les fournit pas toujours. Pour chaque échéance AROME sans valeur (ou nébulosité « hauts seuls »), on prend d’abord ARPEGE, sinon IFS, à la **même heure**. Les modèles réellement utilisés sont `pressure_source_model`, `snow_source_model` et `cloud_cover_source_model`.
+
+Nébulosité affichée (`cloud_cover_display_pct`) : total NEBUL si présent, sinon `max(basse, moyenne, haute × 0,25)` ; bruts sans couches → repli sur `cloud_cover_max_pct`.
 
 Isotherme 0 °C : absente d’AROME / ARPEGE / IFS. La collecte la lit via ICON et l’aligne sur les échéances ; `freeze_source_model` vaut `ICON`.
 
@@ -24,7 +26,7 @@ Créneau exploitable (écrit dans `quotidien.json`) :
 - bornes interpolées au franchissement du seuil, puis heure entière la plus proche (17h53 → 18h) ;
 - sinon `slot_start_h` / `slot_end_h` restent `null` et `slot_label` est vide.
 
-Icône météo : max de nébulosité et de pluie sur l'heure du vent max, l'heure d'avant et celle d'après.
+Icône météo : max de nébulosité **display** et de pluie sur l'heure du vent max, l'heure d'avant et celle d'après.
 Température affichée : valeur à **15 h**.
 
 ## Lancer

@@ -25,7 +25,9 @@ Le workflow *Traitement et affichage* (sur `main`), après une collecte réussie
 
 Vent / rafales déjà en **km/h**. Créneau quotidien : vent moyen **> 15 km/h**.
 
-Pression de surface : si AROME HD n’en a pas, repli **ARPEGE puis IFS** à la même échéance.
+Pression de surface et chutes de neige : AROME HD ne les fournit généralement pas. Pour chaque échéance AROME sans valeur, on prend d’abord ARPEGE, sinon IFS, à la **même heure**. Les modèles réellement utilisés sont `pressure_source_model` et `snow_source_model`.
+
+Nébulosité perçue : `cloud_cover_display_pct` dans `AROMEIFS.csv` (total prioritaire, sinon max basse/moy/haute×0,25 ; repli ARPEGE/IFS si AROME n’a que des hauts). Courbes et icônes du site s’appuient sur ce champ, pas sur `cloud_cover_max_pct`.
 
 ## Lancer en local
 

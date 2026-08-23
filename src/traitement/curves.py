@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from io import StringIO
 
-from config import CURVE_SETS, PRESSURE_FALLBACK_MODELS, SNOW_FALLBACK_MODELS
+from cloud import cloud_cover_display, needs_cloud_fallback
+from config import CLOUD_FALLBACK_MODELS, CURVE_SETS, PRESSURE_FALLBACK_MODELS, SNOW_FALLBACK_MODELS
 from io_raw import load_forecasts_csv
 
 
@@ -20,7 +21,7 @@ class HourPoint:
     wind_dir_deg: float
     temperature_c: float
     precipitation_mm: float
-    cloud_cover_pct: float
+    cloud_cover_display_pct: float
     dew_point_c: float
     surface_pressure_hpa: float | None
     pressure_source_model: str = ""
@@ -28,6 +29,11 @@ class HourPoint:
     snow_source_model: str = ""
     freezing_level_m: float | None = None
     freeze_source_model: str = ""
+    cloud_cover_total_pct: float | None = None
+    cloud_cover_low_pct: float | None = None
+    cloud_cover_mid_pct: float | None = None
+    cloud_cover_high_pct: float | None = None
+    cloud_cover_source_model: str = ""
 
     @property
     def hour_of_day(self) -> float:
@@ -67,6 +73,27 @@ def _wind_kmh(row: dict[str, str], mean: bool) -> float:
     return _as_float(row.get(key))
 
 
+def _cloud_layers_from_row(row: dict[str, str]) -> tuple[float | None, float | None, float | None, float | None]:
+    return (
+        _as_optional_float(row.get("cloud_cover_pct")),
+        _as_optional_float(row.get("cloud_cover_low_pct")),
+        _as_optional_float(row.get("cloud_cover_mid_pct")),
+        _as_optional_float(row.get("cloud_cover_high_pct")),
+    )
+
+
+def _has_cloud_layers(row: dict[str, str]) -> bool:
+    return any(
+        (row.get(name) or "").strip()
+        for name in (
+            "cloud_cover_pct",
+            "cloud_cover_low_pct",
+            "cloud_cover_mid_pct",
+            "cloud_cover_high_pct",
+        )
+    )
+
+
 def load_raw_points() -> dict[tuple[str, str], list[HourPoint]]:
     """Index (spot_key, model_key) → points horaires triés."""
     text = load_forecasts_csv()
@@ -84,6 +111,11 @@ def load_raw_points() -> dict[tuple[str, str], list[HourPoint]]:
         pressure = _as_optional_float(row.get("surface_pressure_hpa"))
         snow = _as_optional_float(row.get("snowfall_cm"))
         freeze = _as_optional_float(row.get("freezing_level_height_m"))
+        total, low, mid, high = _cloud_layers_from_row(row)
+        if _has_cloud_layers(row):
+            display = cloud_cover_display(total, low, mid, high)
+        else:
+            display = _as_float(row.get("cloud_cover_max_pct"))
         point = HourPoint(
             valid_at=valid_at,
             source_model=model,
@@ -92,7 +124,7 @@ def load_raw_points() -> dict[tuple[str, str], list[HourPoint]]:
             wind_dir_deg=_as_float(row.get("wind_direction_10m_deg")),
             temperature_c=_as_float(row.get("temperature_2m_c")),
             precipitation_mm=_as_float(row.get("precipitation_mm")),
-            cloud_cover_pct=_as_float(row.get("cloud_cover_max_pct")),
+            cloud_cover_display_pct=display,
             dew_point_c=_as_float(row.get("dew_point_2m_c")),
             surface_pressure_hpa=pressure,
             pressure_source_model=model if pressure is not None else "",
@@ -101,6 +133,11 @@ def load_raw_points() -> dict[tuple[str, str], list[HourPoint]]:
             freezing_level_m=freeze,
             freeze_source_model=(row.get("freeze_source_model") or "").strip()
             or (model if freeze is not None else ""),
+            cloud_cover_total_pct=total,
+            cloud_cover_low_pct=low,
+            cloud_cover_mid_pct=mid,
+            cloud_cover_high_pct=high,
+            cloud_cover_source_model=model,
         )
         grouped.setdefault((spot, model), []).append(point)
 
@@ -159,12 +196,44 @@ def _fill_pressure(
     )
 
 
+def _cloud_lookup(
+    model_points: dict[str, list[HourPoint]],
+) -> dict[tuple[str, datetime], tuple[float, str]]:
+    """(modèle, échéance) → (display, modèle source) pour le repli nébulosité AROME."""
+    index: dict[tuple[str, datetime], tuple[float, str]] = {}
+    for model in CLOUD_FALLBACK_MODELS:
+        for point in model_points.get(model) or []:
+            source = point.cloud_cover_source_model or model
+            index[(model, point.valid_at)] = (point.cloud_cover_display_pct, source)
+    return index
+
+
+def _fill_cloud(
+    point: HourPoint,
+    lookup: dict[tuple[str, datetime], tuple[float, str]],
+) -> tuple[float, str]:
+    display = point.cloud_cover_display_pct
+    source = point.cloud_cover_source_model or point.source_model
+    if point.source_model == "AROMEHD" and needs_cloud_fallback(
+        point.cloud_cover_total_pct,
+        point.cloud_cover_low_pct,
+        point.cloud_cover_mid_pct,
+        point.cloud_cover_high_pct,
+    ):
+        for model in CLOUD_FALLBACK_MODELS:
+            hit = lookup.get((model, point.valid_at))
+            if hit:
+                return hit
+    return display, source
+
+
 def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ...]) -> list[HourPoint]:
     """Garde le court terme jusqu'à son horizon, puis le modèle suivant, etc."""
     pressure_lookup = _pressure_lookup(model_points)
     snow_lookup = _optional_lookup(
         model_points, SNOW_FALLBACK_MODELS, "snowfall_cm", "snow_source_model"
     )
+    cloud_lookup = _cloud_lookup(model_points)
     curve: list[HourPoint] = []
     cutoff: datetime | None = None
     for model in models:
@@ -178,6 +247,7 @@ def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ..
             snow, ssrc = _fill_optional(
                 point, snow_lookup, SNOW_FALLBACK_MODELS, "snowfall_cm", "snow_source_model"
             )
+            cloud, csrc = _fill_cloud(point, cloud_lookup)
             curve.append(
                 HourPoint(
                     valid_at=point.valid_at,
@@ -187,7 +257,7 @@ def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ..
                     wind_dir_deg=point.wind_dir_deg,
                     temperature_c=point.temperature_c,
                     precipitation_mm=point.precipitation_mm,
-                    cloud_cover_pct=point.cloud_cover_pct,
+                    cloud_cover_display_pct=cloud,
                     dew_point_c=point.dew_point_c,
                     surface_pressure_hpa=pressure,
                     pressure_source_model=psrc,
@@ -195,6 +265,7 @@ def splice_curve(model_points: dict[str, list[HourPoint]], models: tuple[str, ..
                     snow_source_model=ssrc,
                     freezing_level_m=point.freezing_level_m,
                     freeze_source_model=point.freeze_source_model,
+                    cloud_cover_source_model=csrc,
                 )
             )
         cutoff = points[-1].valid_at
