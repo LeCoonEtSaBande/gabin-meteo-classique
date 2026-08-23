@@ -98,7 +98,7 @@ test("indexCurves lit AROMEIFS avec rosée et pression", () => {
       wind_gusts_10m_kmh: "14",
       wind_direction_10m_deg: "20",
       precipitation_mm: "0",
-      cloud_cover_max_pct: "10",
+      cloud_cover_display_pct: "10",
       dew_point_2m_c: "12.2",
       surface_pressure_hpa: "1011.4",
       pressure_source_model: "ARPEGE",

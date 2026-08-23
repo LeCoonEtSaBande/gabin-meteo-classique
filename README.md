@@ -28,7 +28,7 @@ GitHub Pages est configuré sur la **racine** de `affichage-web`.
 | `assets/spots_specs/*.csv` | `collecte-api-meteo` | Infos spots |
 | `data/processed/quotidien.json` | `traitement-donnees` | Jours / horodatage |
 | `data/processed/last_update.json` | `traitement-donnees` | Horodatage « MAJ » — rechargé à l’ouverture |
-| `data/processed/curves/AROMEIFS.csv` | `traitement-donnees` | Graphiques |
+| `data/processed/curves/AROMEIFS.csv` | `traitement-donnees` | Graphiques (nébulosité = `cloud_cover_display_pct`) |
 
 Modifier les spots uniquement sur `collecte-api-meteo`.
 
@@ -38,7 +38,7 @@ Modifier les spots uniquement sur `collecte-api-meteo`.
 | --- | --- |
 | `js/quotidien.js` | modes / sites, navigation des jours, cache local |
 | `js/detail.js` | panneau, specs, chargement du CSV |
-| `js/courbes.js` | rendu SVG des graphiques |
+| `js/courbes.js` | rendu SVG des graphiques (nébulosité perçue `cloud_cover_display_pct`) |
 | `js/csv.js` | parseur CSV `;` |
 | `js/session.js` | couleurs, flèche |
 

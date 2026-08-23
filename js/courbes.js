@@ -121,7 +121,8 @@ function indexCurves(rows) {
     const gust = Number(row.wind_gusts_10m_kmh);
     const dir = Number(row.wind_direction_10m_deg);
     const precip = Number(row.precipitation_mm);
-    const cloud = Number(row.cloud_cover_max_pct);
+    const cloudRaw = row.cloud_cover_display_pct ?? row.cloud_cover_max_pct;
+    const cloud = Number(cloudRaw);
     const temp = Number(row.temperature_2m_c);
     const dew = Number(row.dew_point_2m_c);
     const pressure = Number(row.surface_pressure_hpa);
