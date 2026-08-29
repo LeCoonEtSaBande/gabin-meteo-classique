@@ -1,18 +1,17 @@
-# Collecte Open-Meteo — 2 fois par jour, heures Europe/Paris.
+# Collecte Open-Meteo — 2 fois par jour (cron UTC, :15 pour éviter le pic).
+# En heure d'été : 6h15 / 19h15 Europe/Paris.
+# En heure d'hiver : 5h15 / 18h15 (un décalage d'une heure est accepté).
 # Le cron GitHub ne part que depuis la branche par défaut (main) :
 # ce fichier doit aussi exister sur main. Le job checkout collecte-api-meteo.
 name: Collecte Open-Meteo
 
-on:
+"on":
   schedule:
-    # 06h / 19h CEST (heure d'été)
-    - cron: "0 4,17 * * *"
-    # 06h / 19h CET (heure d'hiver)
-    - cron: "0 5,18 * * *"
+    - cron: "15 4,17 * * *"
   workflow_dispatch:
     inputs:
       force:
-        description: "Ignorer le filtre horaire 6h / 19h"
+        description: "Ignorer le filtre des créneaux déjà collectés"
         type: boolean
         default: true
 
@@ -22,12 +21,14 @@ permissions:
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    env:
+      PYTHONUNBUFFERED: "1"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: collecte-api-meteo
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -37,9 +38,9 @@ jobs:
       - name: Extraire les prévisions
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force }}" = "true" ]; then
-            python src/collecte/run.py --force
+            python -u src/collecte/run.py --force
           else
-            python src/collecte/run.py
+            python -u src/collecte/run.py
           fi
 
       - name: Committer les données
