@@ -17,8 +17,6 @@ except ZoneInfoNotFoundError:
 
     PARIS = ZoneInfo("Europe/Paris")
 
-COLLECT_HOURS = (6, 19)
-
 API_TIMEOUT_S = 60
 PAUSE_BETWEEN_CALLS_S = 1.0
 USER_AGENT = "gabin-meteo-classique-collecte/1.0"

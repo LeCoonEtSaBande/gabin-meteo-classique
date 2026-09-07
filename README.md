@@ -8,9 +8,11 @@ Vue d’ensemble du dépôt : [README de `main`](https://github.com/LeCoonEtSaBa
 
 ## Horaires
 
-Deux extractions par jour, heure **Europe/Paris** : **6h** et **19h**.
+Deux extractions par jour, heure **Europe/Paris** : créneaux de **6h15** et **19h15** en été, **5h15** et **18h15** en hiver.
 
-Le script ne contacte Open-Meteo que sur ces créneaux (sauf `--force`). GitHub Actions combine deux crons UTC pour couvrir l’heure d’été et l’heure d’hiver ; les déclenchements « faux fuseau » sortent sans requête.
+Chaque run est rattaché au **dernier créneau ouvert** (`src/collecte/schedule.py`), puis sauté si ce créneau a déjà été collecté — comparaison avec `last_update_at` de `data/raw/last_update.json`. GitHub livre ses crons avec plusieurs heures de retard : un run tardif collecte donc quand même son créneau, et un second run dans le même créneau ne redéclenche pas d’appels Open-Meteo. `--force` court-circuite ce contrôle.
+
+Ce rattachement remplace un test d’heure exacte (`now.hour in (6, 19)`) qui annulait toute collecte planifiée : les crons arrivant vers 10h30 et 21h15, plus aucune donnée n’a été extraite entre le 31/08 et le 07/09/2026 alors que les runs restaient verts.
 
 Le cron GitHub ne s’exécute que depuis la branche par défaut (`main`) : le workflow `.github/workflows/collecte.yml` n’existe **que** sur `main`. Le job fait un checkout de `collecte-api-meteo`, écrit les fichiers, puis pousse sur cette branche.
 
