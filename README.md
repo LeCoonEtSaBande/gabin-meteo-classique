@@ -35,7 +35,9 @@ Sur `affichage-web`, `assets/spots_specs/` et `data/processed/` sont des **copie
 
 ## Pipeline (2 fois par jour)
 
-Heures **Europe/Paris** : **6h** et **19h** (deux crons UTC sur `main` pour CEST et CET).
+Heures **Europe/Paris** : **6h** et **19h** visées (un cron sur `main`, `15 4,17 * * *` UTC).
+
+GitHub délivre ses crons en retard, parfois de plusieurs heures. Un run planifié collecte donc à l’heure où il démarre : le workflow appelle `run.py --force`, sinon le filtre `6h / 19h` du script annulerait la collecte et le run resterait vert sans données.
 
 ```
 main : Collecte Open-Meteo
@@ -50,7 +52,7 @@ GitHub Pages  (source : racine de affichage-web, ou Actions)
 
 Le site recharge `last_update.json` à l’ouverture : s’il a changé, le JSON quotidien est retéléchargé (même cache local que gabin-meteo).
 
-Déclenchement manuel : Actions → *Collecte Open-Meteo* (`force` ignore le filtre horaire) ou *Traitement et affichage*.
+Déclenchement manuel : Actions → *Collecte Open-Meteo* (décocher `force` réactive le filtre horaire du script) ou *Traitement et affichage*.
 
 ## Données
 

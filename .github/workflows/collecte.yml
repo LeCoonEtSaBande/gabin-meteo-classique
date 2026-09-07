@@ -1,6 +1,7 @@
 # Collecte Open-Meteo — 2 fois par jour (cron UTC, :15 pour éviter le pic).
 # En heure d'été : 6h15 / 19h15 Europe/Paris.
-# En heure d'hiver : 5h15 / 18h15 (un décalage d'une heure est accepté).
+# En heure d'hiver : 5h15 / 18h15. Un décalage est accepté : GitHub délivre les
+# crons en retard, la collecte part à l'heure réelle du run.
 # Le cron GitHub ne part que depuis la branche par défaut (main) :
 # ce fichier doit aussi exister sur main. Le job checkout collecte-api-meteo.
 name: Collecte Open-Meteo
@@ -37,7 +38,11 @@ jobs:
 
       - name: Extraire les prévisions
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force }}" = "true" ]; then
+          # GitHub délivre les événements « schedule » avec plusieurs heures de
+          # retard : à l'arrivée, l'heure de Paris n'est plus 6h ni 19h et le
+          # filtre horaire du script annule la collecte. Le cron est seul juge
+          # du créneau, donc un run planifié collecte toujours.
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ] || [ "${{ inputs.force }}" = "true" ]; then
             python -u src/collecte/run.py --force
           else
             python -u src/collecte/run.py
