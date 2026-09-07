@@ -35,9 +35,9 @@ Sur `affichage-web`, `assets/spots_specs/` et `data/processed/` sont des **copie
 
 ## Pipeline (2 fois par jour)
 
-Heures **Europe/Paris** : **6h** et **19h** visées (un cron sur `main`, `15 4,17 * * *` UTC).
+Créneaux **Europe/Paris** : **6h15** et **19h15** en été, **5h15** et **18h15** en hiver (un cron sur `main`, `15 4,17 * * *` UTC).
 
-GitHub délivre ses crons en retard, parfois de plusieurs heures. Un run planifié collecte donc à l’heure où il démarre : le workflow appelle `run.py --force`, sinon le filtre `6h / 19h` du script annulerait la collecte et le run resterait vert sans données.
+GitHub délivre ses crons en retard, parfois de quatre à cinq heures. `src/collecte/schedule.py` (branche `collecte-api-meteo`) rattache donc chaque run au **dernier créneau ouvert** et ne le saute que si ce créneau a déjà été collecté. Un run tardif collecte encore son créneau, un doublon ne redéclenche aucun appel Open-Meteo, et le changement d’heure est couvert sans intervention.
 
 ```
 main : Collecte Open-Meteo
