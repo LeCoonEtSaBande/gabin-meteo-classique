@@ -54,6 +54,8 @@ Le site recharge `last_update.json` à l’ouverture : s’il a changé, le JSON
 
 Déclenchement manuel : Actions → *Collecte Open-Meteo* (décocher `force` réactive le filtre horaire du script) ou *Traitement et affichage*.
 
+Si les derniers bruts ont plus de 24 h, la collecte émet un avertissement dans le run : le traitement republie sinon les mêmes prévisions avec un horodatage neuf, et le site paraît à jour.
+
 ## Données
 
 - **4 spots** : Ferme de Sauze, Lyon, Hyères, Méribel.
