@@ -1,0 +1,86 @@
+{
+  "run_id": "2026-11-20T19:15:00+01:00",
+  "fetched_at": "2026-11-21T00:06:14+01:00",
+  "last_update_at": "2026-11-21T00:06:14+01:00",
+  "last_update_label": "21/11/2026 00:06",
+  "timezone": "Europe/Paris",
+  "n_forecast_rows": 0,
+  "n_ok": 0,
+  "n_partial": 0,
+  "n_failed": 12,
+  "nulls_replaced_by_zero": 0,
+  "failed": [
+    {
+      "spot_key": "ferme_de_sauze",
+      "model_key": "AROMEHD",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "ferme_de_sauze",
+      "model_key": "ARPEGE",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "ferme_de_sauze",
+      "model_key": "IFS",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "hyeres",
+      "model_key": "AROMEHD",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "hyeres",
+      "model_key": "ARPEGE",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "hyeres",
+      "model_key": "IFS",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "lyon",
+      "model_key": "AROMEHD",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "lyon",
+      "model_key": "ARPEGE",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "lyon",
+      "model_key": "IFS",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "meribel",
+      "model_key": "AROMEHD",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "meribel",
+      "model_key": "ARPEGE",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    },
+    {
+      "spot_key": "meribel",
+      "model_key": "IFS",
+      "error_message": "HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.",
+      "http_status": 429
+    }
+  ]
+}

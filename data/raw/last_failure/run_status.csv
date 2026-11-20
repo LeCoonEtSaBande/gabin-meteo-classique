@@ -1,0 +1,13 @@
+run_id;fetched_at;spot_key;model_key;status;http_status;error_message;hours_written;nulls_replaced_by_zero;grid_latitude;grid_longitude;grid_elevation_m
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;ferme_de_sauze;AROMEHD;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;ferme_de_sauze;ARPEGE;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;ferme_de_sauze;IFS;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;hyeres;AROMEHD;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;hyeres;ARPEGE;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;hyeres;IFS;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;lyon;AROMEHD;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;lyon;ARPEGE;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;lyon;IFS;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;meribel;AROMEHD;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;meribel;ARPEGE;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
+2026-11-20T19:15:00+01:00;2026-11-21T00:06:14+01:00;meribel;IFS;failed;429;HTTP 429 : Daily API request limit exceeded. Please try again tomorrow.;0;0;;;
